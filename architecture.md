@@ -1,6 +1,12 @@
 # Project architecture
 
-## Steps
+## Files and folders
+
+app/
+data/
+
+
+## Data collection
 
 ### 1. Get data from Riot API
 
@@ -9,15 +15,10 @@ Using these APIs
 
 ### 2. Save data as retrieved in .json.zst format
 
+1 file per API response.
 
+### 3. Read data using duckdb
 
-### 3. Concat .json.zst files into a parquetfile
+Concat files into a duckdb file.
 
-
-
-### 4. Read data using duckdb
-
-
-
-### 5. Display in webapp
-
+## App 
