@@ -13,3 +13,5 @@ and timeline https://developer.riotgames.com/apis#match-v5/GET_getTimeline
 Rate limit for Riot games API is:
 - 20 requests every 1 second
 - 100 requests every 2 minutes
+
+Data stored at repo_root/data/
