@@ -7,11 +7,11 @@
 Using these APIs
 - https://developer.riotgames.com/apis
 
-### 2. Save data as retrieved
+### 2. Save data as retrieved in .json.zst format
 
 
 
-### 3. Concat files into a parquetfile
+### 3. Concat .json.zst files into a parquetfile
 
 
 
