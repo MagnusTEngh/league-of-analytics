@@ -13,6 +13,8 @@ Usage:
 import argparse
 import os
 
+from requests_ratelimiter import LimiterSession
+
 from data.api.match import RiotMatchAPI
 from data.api.utils import file_exists
 
@@ -47,6 +49,40 @@ def filter_existing_timelines(match_ids: list, region: str, timeline_dir: str = 
     return [mid for mid in match_ids if not file_exists(f"{region}_{mid}_timeline", timeline_dir)]
 
 
+def get_puuid_and_matches(api_key: str, region: str, game_name: str, tag: str, count: int = 20) -> list:
+    """
+    Get PUUID from game_name#tag and fetch list of match IDs.
+
+    Args:
+        api_key: Riot Games API key
+        region: Region (e.g., europe, americas, asia)
+        game_name: Summoner game name
+        tag: Summoner tagline
+        count: Number of matches to fetch
+
+    Returns:
+        List of match IDs
+    """
+    base_url = f"https://{region}.api.riotgames.com"
+    session = LimiterSession(
+        rate_limits=["20/1s", "100/2m"]
+    )
+    session.headers.update({"X-Riot-Token": api_key})
+
+    url = f"{base_url}/riot/account/v1/accounts/by-riot-id/{game_name}/{tag}"
+    response = session.get(url)
+    response.raise_for_status()
+    account_data = response.json()
+    puuid = account_data["puuid"]
+
+    url = f"{base_url}/lol/match/v5/matches/by-puuid/{puuid}/ids?count={count}"
+    response = session.get(url)
+    response.raise_for_status()
+    match_data = response.json()
+
+    return match_data
+
+
 def main():
     parser = argparse.ArgumentParser(
         description='Fetch match data from Riot Games API and store as .json.zst files'
@@ -54,14 +90,17 @@ def main():
     parser.add_argument('--api-key', required=True, help='Riot Games API key')
     parser.add_argument('--region', default='europe', 
                         help='Region (e.g., europe, americas, asia)')
-    parser.add_argument('match_ids', nargs='+',
-                        help='List of match IDs to fetch')
+    parser.add_argument('--gamename', required=True, help='Summoner game name')
+    parser.add_argument('--tag', required=True, help='Summoner tagline')
+    parser.add_argument('--count', type=int, default=20, help='Number of matches to fetch')
     parser.add_argument('--match-dir', default='data/match',
                         help='Directory to save match files (default: data/match)')
     parser.add_argument('--timeline-dir', default='data/timeline',
                         help='Directory to save timeline files (default: data/timeline)')
     
     args = parser.parse_args()
+    
+    match_ids = get_puuid_and_matches(args.api_key, args.region, args.gamename, args.tag, args.count)
     
     # Initialize API client with shared rate-limited session
     api = RiotMatchAPI(api_key=args.api_key, region=args.region)
@@ -70,16 +109,16 @@ def main():
     os.makedirs(args.match_dir, exist_ok=True)
     os.makedirs(args.timeline_dir, exist_ok=True)
     
-    print(f"\nFetching data for {len(args.match_ids)} matches from {args.region} region...")
+    print(f"\nFetching data for {len(match_ids)} matches from {args.region} region...")
     print(f"Match files: {os.path.abspath(args.match_dir)}")
     print(f"Timeline files: {os.path.abspath(args.timeline_dir)}\n")
     
     # Filter out existing matches and timelines
-    matches_to_fetch = filter_existing_matches(args.match_ids, args.region, args.match_dir)
-    timelines_to_fetch = filter_existing_timelines(args.match_ids, args.region, args.timeline_dir)
+    matches_to_fetch = filter_existing_matches(match_ids, args.region, args.match_dir)
+    timelines_to_fetch = filter_existing_timelines(match_ids, args.region, args.timeline_dir)
     
-    print(f"Matches to fetch: {len(matches_to_fetch)}/{len(args.match_ids)}")
-    print(f"Timelines to fetch: {len(timelines_to_fetch)}/{len(args.match_ids)}\n")
+    print(f"Matches to fetch: {len(matches_to_fetch)}/{len(match_ids)}")
+    print(f"Timelines to fetch: {len(timelines_to_fetch)}/{len(match_ids)}\n")
     
     # Fetch only missing matches
     if matches_to_fetch:
