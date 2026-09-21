@@ -5,7 +5,7 @@ from typing import Optional, Dict, Any
 import requests
 from requests_ratelimiter import LimiterSession
 
-from data.api.utils import save_compressed_json
+from data.api.utils import save_compressed_json, file_exists
 
 
 class RiotMatchAPI:
@@ -37,17 +37,23 @@ class RiotMatchAPI:
         self.session = RiotMatchAPI._session
         self.session.headers.update({"X-Riot-Token": self.api_key})
 
-    def get_match(self, match_id: str, data_dir: str = "data") -> Optional[str]:
+    def get_match(self, match_id: str, match_dir: str = "data/match", timeline_dir: str = "data/timeline") -> Optional[str]:
         """
         Fetch match data by match ID and save as compressed JSON.
 
         Args:
             match_id: The match ID to fetch
-            data_dir: Directory to save the file in
+            match_dir: Directory to save match files in
+            timeline_dir: Directory to save timeline files in (unused here)
 
         Returns:
-            Path to the saved file, or None if failed
+            Path to the saved file, or None if failed or already exists
         """
+        filename = f"{self.region}_{match_id}"
+        if file_exists(filename, match_dir):
+            print(f"  Match data already exists: {match_dir}/{filename}.json.zst")
+            return None
+        
         url = f"{self.base_url}/lol/match/v5/matches/{match_id}"
         
         try:
@@ -55,25 +61,30 @@ class RiotMatchAPI:
             response.raise_for_status()
             data = response.json()
             
-            filename = f"{self.region}_{match_id}"
-            filepath = save_compressed_json(data, filename, data_dir)
-            print(f"Saved match data: {filepath}")
+            filepath = save_compressed_json(data, filename, match_dir)
+            print(f"  Saved match data: {filepath}")
             return filepath
         except Exception as e:
-            print(f"Error fetching match {match_id}: {e}")
+            print(f"  Error fetching match {match_id}: {e}")
             return None
 
-    def get_match_timeline(self, match_id: str, data_dir: str = "data") -> Optional[str]:
+    def get_match_timeline(self, match_id: str, match_dir: str = "data/match", timeline_dir: str = "data/timeline") -> Optional[str]:
         """
         Fetch match timeline by match ID and save as compressed JSON.
 
         Args:
             match_id: The match ID to fetch timeline for
-            data_dir: Directory to save the file in
+            match_dir: Directory for match files (unused here)
+            timeline_dir: Directory to save timeline files in
 
         Returns:
-            Path to the saved file, or None if failed
+            Path to the saved file, or None if failed or already exists
         """
+        filename = f"{self.region}_{match_id}_timeline"
+        if file_exists(filename, timeline_dir):
+            print(f"  Timeline already exists: {timeline_dir}/{filename}.json.zst")
+            return None
+        
         url = f"{self.base_url}/lol/match/v5/matches/{match_id}/timeline"
         
         try:
@@ -81,42 +92,43 @@ class RiotMatchAPI:
             response.raise_for_status()
             data = response.json()
             
-            filename = f"{self.region}_{match_id}_timeline"
-            filepath = save_compressed_json(data, filename, data_dir)
-            print(f"Saved match timeline: {filepath}")
+            filepath = save_compressed_json(data, filename, timeline_dir)
+            print(f"  Saved match timeline: {filepath}")
             return filepath
         except Exception as e:
-            print(f"Error fetching timeline for match {match_id}: {e}")
+            print(f"  Error fetching timeline for match {match_id}: {e}")
             return None
 
-    def get_match_with_timeline(self, match_id: str, data_dir: str = "data") -> tuple:
+    def get_match_with_timeline(self, match_id: str, match_dir: str = "data/match", timeline_dir: str = "data/timeline") -> tuple:
         """
         Fetch both match data and timeline for a given match ID.
 
         Args:
             match_id: The match ID to fetch
-            data_dir: Directory to save files in
+            match_dir: Directory to save match files in
+            timeline_dir: Directory to save timeline files in
 
         Returns:
             Tuple of (match_filepath, timeline_filepath)
         """
-        match_path = self.get_match(match_id, data_dir)
-        timeline_path = self.get_match_timeline(match_id, data_dir)
+        match_path = self.get_match(match_id, match_dir, timeline_dir)
+        timeline_path = self.get_match_timeline(match_id, match_dir, timeline_dir)
         return match_path, timeline_path
 
-    def get_matches(self, match_ids: list, data_dir: str = "data") -> Dict[str, tuple]:
+    def get_matches(self, match_ids: list, match_dir: str = "data/match", timeline_dir: str = "data/timeline") -> Dict[str, tuple]:
         """
         Fetch multiple matches with their timelines.
 
         Args:
             match_ids: List of match IDs to fetch
-            data_dir: Directory to save files in
+            match_dir: Directory to save match files in
+            timeline_dir: Directory to save timeline files in
 
         Returns:
             Dictionary mapping match_id to (match_path, timeline_path) tuple
         """
         results = {}
         for match_id in match_ids:
-            match_path, timeline_path = self.get_match_with_timeline(match_id, data_dir)
+            match_path, timeline_path = self.get_match_with_timeline(match_id, match_dir, timeline_dir)
             results[match_id] = (match_path, timeline_path)
         return results

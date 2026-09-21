@@ -76,3 +76,18 @@ def list_compressed_files(data_dir: str = "data") -> list:
         if f.endswith('.json.zst'):
             files.append(os.path.join(data_dir, f))
     return files
+
+
+def file_exists(filename: str, data_dir: str = "data") -> bool:
+    """
+    Check if a .json.zst file exists in the given directory.
+
+    Args:
+        filename: Name of the file (without extension)
+        data_dir: Directory to check
+
+    Returns:
+        True if the file exists, False otherwise
+    """
+    filepath = os.path.join(data_dir, f"{filename}.json.zst")
+    return os.path.exists(filepath)
