@@ -49,7 +49,7 @@ def filter_existing_timelines(match_ids: list, region: str, timeline_dir: str = 
     return [mid for mid in match_ids if not file_exists(f"{region}_{mid}_timeline", timeline_dir)]
 
 
-def get_puuid_and_matches(api_key: str, region: str, game_name: str, tag: str, count: int = 20) -> list:
+def get_puuid_and_matches(api_key: str, region: str, game_name: str, tag: str) -> list:
     """
     Get PUUID from game_name#tag and fetch list of match IDs.
 
@@ -58,7 +58,6 @@ def get_puuid_and_matches(api_key: str, region: str, game_name: str, tag: str, c
         region: Region (e.g., europe, americas, asia)
         game_name: Summoner game name
         tag: Summoner tagline
-        count: Number of matches to fetch
 
     Returns:
         List of match IDs
@@ -75,12 +74,19 @@ def get_puuid_and_matches(api_key: str, region: str, game_name: str, tag: str, c
     account_data = response.json()
     puuid = account_data["puuid"]
 
-    url = f"{base_url}/lol/match/v5/matches/by-puuid/{puuid}/ids?count={count}"
-    response = session.get(url)
-    response.raise_for_status()
-    match_data = response.json()
+    all_match_ids = []
+    start = 0
+    while True:
+        url = f"{base_url}/lol/match/v5/matches/by-puuid/{puuid}/ids?start={start}&count=100"
+        response = session.get(url)
+        response.raise_for_status()
+        match_data = response.json()
+        all_match_ids.extend(match_data)
+        if len(match_data) < 100:
+            break
+        start += 100
 
-    return match_data
+    return all_match_ids
 
 
 def main():
@@ -92,7 +98,6 @@ def main():
                         help='Region (e.g., europe, americas, asia)')
     parser.add_argument('--gamename', required=True, help='Summoner game name')
     parser.add_argument('--tag', required=True, help='Summoner tagline')
-    parser.add_argument('--count', type=int, default=20, help='Number of matches to fetch')
     parser.add_argument('--match-dir', default='data/match',
                         help='Directory to save match files (default: data/match)')
     parser.add_argument('--timeline-dir', default='data/timeline',
@@ -100,7 +105,7 @@ def main():
     
     args = parser.parse_args()
     
-    match_ids = get_puuid_and_matches(args.api_key, args.region, args.gamename, args.tag, args.count)
+    match_ids = get_puuid_and_matches(args.api_key, args.region, args.gamename, args.tag)
     
     # Initialize API client with shared rate-limited session
     api = RiotMatchAPI(api_key=args.api_key, region=args.region)
