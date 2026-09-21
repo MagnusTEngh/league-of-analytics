@@ -2,9 +2,13 @@
 
 ## Files and folders
 
-app/
-data/
-
+```
+league-of-analytics/
+├── app/.          # contains the webapp
+└── data/          # everything before app
+    ├── storage.py # data management
+    └── api/       # API related code
+```
 
 ## Data collection
 
