@@ -33,7 +33,13 @@ Frequently used queries such as filtering to only match ids where a specific acc
 
 ## Apps
 
+Common pages should include:
 
+- Home: Key stats such as amount of games played by queue and in total, winrates, games over time by patch and some fun stats like a high scores collection including highest amount of kills, deaths, assists, wards placed, dodged skillshots and missing pings.
+- Champions: An overview of which Champions the player favors and a selector to pick a specific one for detailed stats. Selecting a champion should among other things show their splash art.
+- Specific game viewer: just show all data associated with a selected match id.
+
+Queries for this information should be functions that can be reused between apps.
 
 ### Streamlit
 
