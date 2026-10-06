@@ -17,9 +17,6 @@
           python3
           uv
           
-          # Code editor
-          vscode
-          
           # Git hooks
           pre-commit
           
@@ -30,7 +27,7 @@
         
         shellHook = ''
           echo "Development environment ready!"
-          echo "Available tools: uv, vscode, pre-commit, git, curl"
+          echo "Available tools: uv, pre-commit, git, curl"
         '';
       };
       

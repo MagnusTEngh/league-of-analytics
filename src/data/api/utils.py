@@ -1,12 +1,15 @@
 """Utility functions for Riot API interactions."""
 
-import os
 import json
+import os
+import logging
 import zstandard as zstd
-from typing import Optional, Dict, Any
+from typing import Optional, List
+
+logger = logging.getLogger(__name__)
 
 
-def save_compressed_json(data: Dict[str, Any], filename: str, data_dir: str = "data") -> str:
+def save_compressed_json(data: dict, filename: str, data_dir: str = "data") -> str:
     """
     Save data as compressed JSON file with .json.zst extension.
 
@@ -37,7 +40,7 @@ def save_compressed_json(data: Dict[str, Any], filename: str, data_dir: str = "d
     return filepath
 
 
-def read_compressed_json(filepath: str) -> Optional[Dict[str, Any]]:
+def read_compressed_json(filepath: str) -> Optional[dict]:
     """
     Read a compressed JSON file.
 
@@ -54,11 +57,11 @@ def read_compressed_json(filepath: str) -> Optional[Dict[str, Any]]:
         json_data = dctx.decompress(compressed_data)
         return json.loads(json_data)
     except Exception as e:
-        print(f"Error reading {filepath}: {e}")
+        logger.error("Error reading %s: %s", filepath, e)
         return None
 
 
-def list_compressed_files(data_dir: str = "data") -> list:
+def list_compressed_files(data_dir: str = "data") -> List[str]:
     """
     List all .json.zst files in the data directory.
 
