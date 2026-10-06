@@ -9,7 +9,7 @@ league-of-analytics/
         ├── match_v5/
         └── timelines/
     └── league-of-analytics/
-        ├── app/           # contains the webapp
+        ├── app/           # contains the webapp(s)
         └── database/      # everything before app
         └── api/           # API related code
 ```
@@ -20,10 +20,17 @@ league-of-analytics/
 
 Using these APIs
 - https://developer.riotgames.com/apis
+- 
 
-### 2. Save data as retrieved in .json.zst format
+There should be one class called RequestHandler at api/main.py. It will be responsible for rate limiting and running requests for each endpoint. It will have a method that takes a summonername#tag as input, that finds all existing data per endpoint, sets self.current_account and then runs the requests necessary for gathering all missing data for the account.
+
+Each endpoint is its own method with a shared request method which handles errors and such.
+
+API responses are saved as they are received in the .json.zst format.
 
 1 file per API response, organized in sub folders according to the api endpoint it was retrieved from.
+
+File names are {region}_{id}.json.zst. Where id is either match_id, account or similar.
 
 ## Database
 
