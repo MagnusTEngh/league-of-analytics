@@ -4,10 +4,14 @@
 
 ```
 league-of-analytics/
-├── app/.          # contains the webapp
-└── data/          # everything before app
-    ├── storage.py # data management
-    └── api/       # API related code
+└── src/
+    ├── sample-data/
+        ├── match_v5/
+        └── timelines/
+    └── league-of-analytics/
+        ├── app/           # contains the webapp
+        └── database/      # everything before app
+        └── api/           # API related code
 ```
 
 ## Data collection
