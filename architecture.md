@@ -19,7 +19,7 @@ Using these APIs
 
 ### 2. Save data as retrieved in .json.zst format
 
-1 file per API response.
+1 file per API response, organized in sub folders according to the api endpoint it was retrieved from.
 
 ### 3. Read data using duckdb
 
