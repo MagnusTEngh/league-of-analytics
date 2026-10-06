@@ -11,7 +11,7 @@ from urllib.parse import quote
 
 from requests_ratelimiter import LimiterSession
 
-from data.api.utils import save_compressed_json, file_exists
+from league_of_analytics.files import save_compressed_json, file_exists
 
 logger = logging.getLogger(__name__)
 

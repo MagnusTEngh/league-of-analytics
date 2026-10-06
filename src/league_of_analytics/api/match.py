@@ -5,7 +5,7 @@ Deprecated: Use RequestHandler from data.api.request_handler instead.
 
 from typing import Optional
 
-from data.api.request_handler import RequestHandler
+from league_of_analytics.api.request_handler import RequestHandler
 
 
 class RiotMatchAPI:

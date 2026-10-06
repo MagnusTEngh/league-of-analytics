@@ -11,7 +11,7 @@ import logging
 
 import duckdb
 
-from data.api.utils import list_compressed_files, read_compressed_json
+from league_of_analytics.files import list_compressed_files, read_compressed_json
 
 logger = logging.getLogger(__name__)
 
