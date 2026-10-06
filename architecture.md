@@ -1,11 +1,9 @@
 # Project architecture
 
-## Files and folders
-
 ```
 league-of-analytics/
 └── src/
-    ├── sample-data/
+    ├── sample-data/.      # contains sample data for endpoints
         ├── match_v5/
         └── timelines/
     └── league-of-analytics/
@@ -44,7 +42,7 @@ The database will be a duckdb file on disk and used with read only.
 
 Queries should be done using duckdb Python API.
 
-Frequently used queries such as filtering to only match ids where a specific account participated should be made as reusable functions.
+Frequently used queries such as filtering to only match ids where a specific account participated should be made as reusable functions. These are placed under database/utilS/
 
 ## Apps
 
@@ -54,7 +52,7 @@ Common pages should include:
 - Champions: An overview of which Champions the player favors and a selector to pick a specific one for detailed stats. Selecting a champion should among other things show their splash art.
 - Specific game viewer: just show all data associated with a selected match id.
 
-Queries for this information should be functions that can be reused between apps.
+Queries for this information should be functions that can be reused between apps. These are stored in apps/queries/ and can be grouped in the same file when it makes logical sense.
 
 ### Streamlit
 
