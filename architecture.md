@@ -16,25 +16,29 @@ league-of-analytics/
 
 ## Data collection
 
-### 1. Get data from Riot API
-
 Using these APIs
 - https://developer.riotgames.com/apis
-- 
+- datadragon
 
-There should be one class called RequestHandler at api/main.py. It will be responsible for rate limiting and running requests for each endpoint. It will have a method that takes a summonername#tag as input, that finds all existing data per endpoint, sets self.current_account and then runs the requests necessary for gathering all missing data for the account.
+There should be one class called RequestHandler at api/main.py. It will be responsible for rate limiting and running requests for each endpoint and storing the data. The storage path is an attribute set in its init method.
+
+It will have a method that takes a summonername#tag as input, that finds all existing data per endpoint, sets self.current_account and then runs the requests necessary for gathering all missing data for the account.
 
 Each endpoint is its own method with a shared request method which handles errors and such.
+
+Note: list of match ids is not saved as it is just temporarily used for finding matches, not of analytical interest.
 
 API responses are saved as they are received in the .json.zst format.
 
 1 file per API response, organized in sub folders according to the api endpoint it was retrieved from.
 
-File names are {region}_{id}.json.zst. Where id is either match_id, account or similar.
+File names are {region}_{id}.json.zst. Where id is either match_id, account-tag or similar.
 
 ## Database
 
-Concat files into a duckdb file. Each endpoint gets its own table. The content of json files should be a VARIANT type.
+A function concats files into a duckdb file, over writing if it already exists.
+
+Each endpoint gets its own table. The content of json files should be a VARIANT type.
 
 The database will be a duckdb file on disk and used with read only.
 
