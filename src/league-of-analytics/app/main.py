@@ -1,3 +1,8 @@
+"""Main Streamlit app for League of Analytics.
+
+This is the entry point for the Streamlit web application.
+"""
+
 import streamlit as st
 
 # Initialize session state for account selection
