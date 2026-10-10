@@ -3,7 +3,8 @@
 This module provides the main RequestHandler class that handles rate limiting,
 request execution, and data storage for all Riot Games API endpoints.
 """
-
+from functools import wraps
+import logging
 import os
 import json
 import zstandard as zstd
@@ -11,6 +12,32 @@ from typing import Optional, Dict, Any, List
 
 from requests_ratelimiter import LimiterSession
 
+from dotenv import load_dotenv
+
+logging.basicConfig(
+    level=logging.DEBUG,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+)
+
+logger = logging.getLogger(__name__)
+
+
+def log_call(level=logging.DEBUG):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            logger.log(
+                level,
+                "%s called with args=%s, kwargs=%s",
+                func.__name__,
+                args,
+                kwargs,
+            )
+            return func(*args, **kwargs)
+        return wrapper
+    return decorator
+
+load_dotenv()
 
 class RequestHandler:
     """
@@ -19,31 +46,63 @@ class RequestHandler:
     Handles rate limiting, request execution, error handling, and data storage.
     Each endpoint has its own method, with a shared request method for common functionality.
     """
-    
-    def __init__(self, api_key: str, storage_path: str = "data", region: str = "europe"):
+    storage_path = os.getenv("data_storage_path", None)
+
+    @classmethod
+    def set_storage_path(path: str):
+        RequestHandler.storage_path = path
+
+    def __init__(self, api_key: str | None = None, region: str = "europe"):
         """
         Initialize the RequestHandler.
         
         Args:
-            api_key: Riot Games API key
+            api_key: Riot Games API key (default: gets token from .env file)
             storage_path: Base path for storing API responses (default: "data")
             region: Default region for API requests (default: "europe")
         """
+        if not api_key:
+            api_key = os.getenv("RIOT_GAMES_API_KEY", None)
+            if not api_key:
+                raise ValueError(
+                    "Missing RIOT_GAMES_API_KEY environment variable. "
+                    "Please add RIOT_GAMES_API_KEY=your_api_key to your .env file or provide it directly to the script."
+                )
         self.api_key = api_key
-        self.storage_path = storage_path
+        self.storage_path = RequestHandler.storage_path
         self.region = region
         self.base_url = f"https://{region}.api.riotgames.com"
         self.current_account = None
         
         # Create rate-limited session
         self.session = LimiterSession(
-            rate_limits=[
-                "20/1s",
-                "100/2m"
-            ]
+            per_second=20,
+            per_minute=50,
         )
         self.session.headers.update({"X-Riot-Token": self.api_key})
     
+    @log_call()
+    def run_collection(self, accounts: List[str]) -> None:
+        """
+        Gather data for multiple Riot accounts.
+
+        Args:
+            accounts: List of Riot IDs in the format "game_name#tag".
+        """
+        total = len(accounts)
+
+        for index, account in enumerate(accounts, start=1):
+            logger.info(f"\n[{index}/{total}] Collecting data for {account}")
+
+            try:
+                self.gather_data_for_account(account)
+            except Exception as e:
+                logger.info(f"Failed to collect data for {account}: {e}")
+                continue
+
+        logger.info(f"\nCollection complete. Processed {total} accounts.")
+
+    @log_call()
     def _make_request(self, url: str, params: Optional[Dict] = None) -> Optional[Dict[str, Any]]:
         """
         Shared request method that handles errors and rate limiting.
@@ -60,9 +119,10 @@ class RequestHandler:
             response.raise_for_status()
             return response.json()
         except Exception as e:
-            print(f"Error making request to {url}: {e}")
+            logger.info(f"Error making request to {url}: {e}")
             return None
-    
+
+    @log_call()
     def _save_data(self, data: Dict[str, Any], filename: str, subdir: str) -> str:
         """
         Save data as compressed JSON file.
@@ -93,7 +153,8 @@ class RequestHandler:
             f.write(compressed_data)
         
         return filepath
-    
+
+    @log_call()
     def _file_exists(self, filename: str, subdir: str) -> bool:
         """
         Check if a .json.zst file exists in the given subdirectory.
@@ -107,7 +168,8 @@ class RequestHandler:
         """
         filepath = os.path.join(self.storage_path, subdir, f"{filename}.json.zst")
         return os.path.exists(filepath)
-    
+
+    @log_call()
     def get_account_by_riot_id(self, game_name: str, tag: str) -> Optional[Dict[str, Any]]:
         """
         Get account information by riot ID (game_name#tag).
@@ -121,7 +183,8 @@ class RequestHandler:
         """
         url = f"{self.base_url}/riot/account/v1/accounts/by-riot-id/{game_name}/{tag}"
         return self._make_request(url)
-    
+
+    @log_call()
     def get_matches_by_puuid(self, puuid: str, start: int = 0, count: int = 100) -> Optional[List[str]]:
         """
         Get list of match IDs for a given PUUID.
@@ -137,7 +200,8 @@ class RequestHandler:
         url = f"{self.base_url}/lol/match/v5/matches/by-puuid/{puuid}/ids"
         params = {"start": start, "count": count}
         return self._make_request(url, params)
-    
+
+    @log_call()
     def get_match(self, match_id: str) -> Optional[Dict[str, Any]]:
         """
         Get match data by match ID.
@@ -150,7 +214,8 @@ class RequestHandler:
         """
         url = f"{self.base_url}/lol/match/v5/matches/{match_id}"
         return self._make_request(url)
-    
+
+    @log_call()
     def get_match_timeline(self, match_id: str) -> Optional[Dict[str, Any]]:
         """
         Get match timeline by match ID.
@@ -163,7 +228,8 @@ class RequestHandler:
         """
         url = f"{self.base_url}/lol/match/v5/matches/{match_id}/timeline"
         return self._make_request(url)
-    
+
+    @log_call()
     def get_all_matches_for_account(self, game_name: str, tag: str) -> List[str]:
         """
         Get all match IDs for a given account.
@@ -193,7 +259,8 @@ class RequestHandler:
             start += 100
         
         return all_match_ids
-    
+
+    @log_call()
     def save_match_data(self, match_id: str, data: Dict[str, Any]) -> str:
         """
         Save match data to storage.
@@ -207,7 +274,8 @@ class RequestHandler:
         """
         filename = f"{self.region}_{match_id}"
         return self._save_data(data, filename, "match_v5")
-    
+
+    @log_call()
     def save_timeline_data(self, match_id: str, data: Dict[str, Any]) -> str:
         """
         Save timeline data to storage.
@@ -221,7 +289,8 @@ class RequestHandler:
         """
         filename = f"{self.region}_{match_id}"
         return self._save_data(data, filename, "timelines")
-    
+
+    @log_call()
     def gather_data_for_account(self, summoner_name_tag: str) -> None:
         """
         Main method to gather all missing data for an account.
@@ -234,18 +303,18 @@ class RequestHandler:
         """
         # Parse summoner name and tag
         if "#" not in summoner_name_tag:
-            print(f"Invalid summoner format: {summoner_name_tag}. Expected format: name#tag")
+            logger.info(f"Invalid summoner format: {summoner_name_tag}. Expected format: name#tag")
             return
         
         game_name, tag = summoner_name_tag.split("#", 1)
         self.current_account = summoner_name_tag
         
-        print(f"Gathering data for account: {self.current_account}")
+        logger.info(f"Gathering data for account: {self.current_account}")
         
         # Get account info
         account_data = self.get_account_by_riot_id(game_name, tag)
         if account_data is None:
-            print(f"Failed to get account info for {summoner_name_tag}")
+            logger.info(f"Failed to get account info for {summoner_name_tag}")
             return
         
         puuid = account_data["puuid"]
@@ -261,11 +330,11 @@ class RequestHandler:
         account_filename = f"{self.region}_{puuid}"
         if not self._file_exists(account_filename, "account"):
             self._save_data(account_data, account_filename, "account")
-            print(f"Saved account data for {puuid}")
+            logger.info(f"Saved account data for {puuid}")
         
         # Get all match IDs
         all_match_ids = self.get_all_matches_for_account(game_name, tag)
-        print(f"Found {len(all_match_ids)} matches for account")
+        logger.info(f"Found {len(all_match_ids)} matches for account")
         
         # Note: list of match ids is not saved as per architecture.md
         
@@ -274,17 +343,28 @@ class RequestHandler:
             # Check if match data already exists
             match_filename = f"{self.region}_{match_id}"
             if not self._file_exists(match_filename, "match_v5"):
-                print(f"Fetching match data for {match_id}")
+                logger.info(f"Fetching match data for {match_id}")
                 match_data = self.get_match(match_id)
                 if match_data:
                     self.save_match_data(match_id, match_data)
-                    print(f"Saved match data for {match_id}")
+                    logger.info(f"Saved match data for {match_id}")
             
             # Check if timeline data already exists
             timeline_filename = f"{self.region}_{match_id}"
             if not self._file_exists(timeline_filename, "timelines"):
-                print(f"Fetching timeline data for {match_id}")
+                logger.info(f"Fetching timeline data for {match_id}")
                 timeline_data = self.get_match_timeline(match_id)
                 if timeline_data:
                     self.save_timeline_data(match_id, timeline_data)
-                    print(f"Saved timeline data for {match_id}")
+                    logger.info(f"Saved timeline data for {match_id}")
+
+def main() -> None:
+    accounts = [
+        "otwinterkart#EUW",
+    ]
+
+    handler = RequestHandler()
+    handler.run_collection(accounts)
+
+if __name__ == "__main__":
+    main()
