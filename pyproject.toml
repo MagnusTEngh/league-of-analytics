@@ -1,0 +1,24 @@
+[project]
+name = "league-of-analytics"
+version = "0.1.0"
+description = "Project that gathers data and makes it available for dashboards."
+readme = "README.md"
+authors = [
+    { name = "magnus", email = "magnustheodorengh@gmail.com" }
+]
+requires-python = ">=3.14"
+dependencies = [
+    "duckdb>=1.5.6",
+    "python-dotenv>=1.2.4",
+    "requests>=2.34.2",
+    "requests-ratelimiter>=0.10.0",
+    "streamlit>=1.65.0",
+    "zstandard>=0.25.0",
+]
+
+[project.scripts]
+league-of-analytics = "league_of_analytics:main"
+
+[build-system]
+requires = ["uv_build>=0.12.22,<0.13.0"]
+build-backend = "uv_build"
