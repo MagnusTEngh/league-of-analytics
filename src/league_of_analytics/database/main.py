@@ -10,8 +10,10 @@ import json
 import zstandard as zstd
 from typing import Optional, List, Dict, Any
 
-import duckdb
+import duckdb as db
+from dotenv import load_dotenv
 
+load_dotenv()
 
 # Regex patterns for parsing filenames
 MATCH_FILENAME_RE = re.compile(r"^(?P<region>[a-z]+)_(?P<match_id>[A-Z0-9_]+)$")
@@ -21,7 +23,7 @@ ACCOUNT_FILENAME_RE = re.compile(r"^(?P<region>[a-z]+)_(?P<puuid>[A-Za-z0-9_-]+)
 
 def _get_storage_path() -> str:
     """Get the base storage path for data files."""
-    return "data"
+    return os.getenv("data_storage_path", None)
 
 
 def list_compressed_files(subdir: str) -> List[str]:

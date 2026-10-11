@@ -10,9 +10,9 @@ Nix is used for providing the development environment.
 
 1. Clone the repo
 2. Create a .env file after the template in .env.example. Note, each account you want to collect data for needs to be in the ACCOUNTS list in ´.env´
-3. Enter the repository with a terminal and run ´nix develop´
-4. Collect data by using ´uv run src/league_of_analytics/api/main´
-5. Build the database using ´uv run src/league_of_analytics/database/main´
+3. Enter the repository with a terminal and run ´nix develop´, and install the python environment using ´uv sync´
+4. Collect data by using ´uv run src/league_of_analytics/api/main.py´
+5. Build the database using ´uv run src/league_of_analytics/database/main.py´
 
 ## Nice to know
 
