@@ -19,6 +19,9 @@
           # Python tools
           python3
           uv
+
+          # duckdb dependency
+          stdenv.cc.cc.lib
           
           # Code editor
           vscode
@@ -30,6 +33,9 @@
           git
           curl
         ];
+        
+        # duckdb dependency
+        LD_LIBRARY_PATH = "${pkgs.stdenv.cc.cc.lib}/lib";
         
         shellHook = ''
           alias vscode-web='code serve-web --host 0.0.0.0 --port 8000 --without-connection-token --accept-server-license-terms'

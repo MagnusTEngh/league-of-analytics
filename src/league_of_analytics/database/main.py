@@ -11,7 +11,9 @@ import zstandard as zstd
 from typing import Optional, List, Dict, Any
 
 import duckdb
+from dotenv import load_dotenv
 
+load_dotenv()
 
 # Regex patterns for parsing filenames
 MATCH_FILENAME_RE = re.compile(r"^(?P<region>[a-z]+)_(?P<match_id>[A-Z0-9_]+)$")
@@ -21,7 +23,7 @@ ACCOUNT_FILENAME_RE = re.compile(r"^(?P<region>[a-z]+)_(?P<puuid>[A-Za-z0-9_-]+)
 
 def _get_storage_path() -> str:
     """Get the base storage path for data files."""
-    return "data"
+    return os.getenv("data_storage_path", None)
 
 
 def list_compressed_files(subdir: str) -> List[str]:
@@ -79,7 +81,7 @@ def _load_matches(con: duckdb.DuckDBPyConnection, match_dir: str = "match_v5") -
         CREATE OR REPLACE TABLE matches (
             match_id VARCHAR PRIMARY KEY,
             region VARCHAR,
-            data VARIANT
+            data JSON
         )
     """)
     
@@ -113,7 +115,7 @@ def _load_timelines(con: duckdb.DuckDBPyConnection, timeline_dir: str = "timelin
         CREATE OR REPLACE TABLE timelines (
             match_id VARCHAR PRIMARY KEY,
             region VARCHAR,
-            data VARIANT
+            data JSON
         )
     """)
     
@@ -144,7 +146,7 @@ def _load_accounts(con: duckdb.DuckDBPyConnection, account_dir: str = "account")
         CREATE OR REPLACE TABLE accounts (
             puuid VARCHAR PRIMARY KEY,
             region VARCHAR,
-            data VARIANT
+            data JSON
         )
     """)
     
@@ -219,6 +221,34 @@ def get_connection(db_path: str = "data/league.duckdb") -> duckdb.DuckDBPyConnec
     """
     return duckdb.connect(db_path, read_only=True)
 
+def check_db():
+    con = get_connection(db_path= "data/league.duckdb")
+    # 1. Get all existing tables
+    tables = con.execute("SHOW TABLES").fetchall()
+
+    if not tables:
+        print("No tables found in the database.")
+        return
+
+    for (table_name,) in tables:
+        print(f"\n{'=' * 60}")
+        print(f"Table: {table_name}")
+        print(f"{'=' * 60}")
+
+        # 2. Print table description (column names, types, etc.)
+        print("\nDescription:")
+        description = con.execute(
+            f'DESCRIBE "{table_name}"'
+        ).fetchdf()
+        print(description.to_string(index=False))
+
+        # 3. Print the first row
+        print("\nFirst row:")
+        rows = con.execute(
+            f'SELECT * FROM "{table_name}" LIMIT 1'
+        ).fetchdf()
+        print(rows.to_string(index=False))
 
 if __name__ == "__main__":
     make_duckdb()
+    check_db()
