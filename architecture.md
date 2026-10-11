@@ -65,3 +65,17 @@ Queries for this information should be functions that can be reused between apps
 ### Streamlit
 
 This app should use pages and have a sidebar for selecting the account(s) to look at data for and navigation between pages.
+
+
+
+## CLI tool
+
+Common tool for the repo. Provides access to several commands:
+
+- Modify .env
+  - Set storage path
+  - Set token
+  - Add account
+  - Remove account
+- API
+  - Collect data, defaults to all configured accounts
