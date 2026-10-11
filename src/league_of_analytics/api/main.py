@@ -359,9 +359,7 @@ class RequestHandler:
                     logger.info(f"Saved timeline data for {match_id}")
 
 def main() -> None:
-    accounts = [
-        "otwinterkart#EUW",
-    ]
+    accounts = os.getenv("ACCOUNTS", None).split(",")
 
     handler = RequestHandler()
     handler.run_collection(accounts)
