@@ -32,7 +32,7 @@ API responses are saved as they are received in the .json.zst format.
 
 File names are {region}_{id}.json.zst. Where id is either match_id, account-tag or similar.
 
-## Database
+## Database and storage
 
 A function concats files into a duckdb file, over writing if it already exists.
 
@@ -42,7 +42,15 @@ The database will be a duckdb file on disk and used with read only.
 
 Queries should be done using duckdb Python API.
 
-Frequently used queries such as filtering to only match ids where a specific account participated should be made as reusable functions. These are placed under database/utilS/
+Frequently used queries such as filtering to only match ids where a specific account participated should be made as reusable functions. These are placed under database/utils/
+
+there should be a storage_tools.py with functions to copy, move, split or consolidate file storages.
+
+It should be possible to split by selecting only matches where a certain account was present.
+
+It should have functions for copying local files to a shared central file storage or object storage.
+
+There also needs to be functions for compressing all json files and adding it to an endpoint folder, or decompressing a folder to regular json files.
 
 ## Apps
 
