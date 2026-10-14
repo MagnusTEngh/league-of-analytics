@@ -1,13 +1,11 @@
 """Home page: overview stats for a single player, selected by Riot ID (name#tag)."""
 
-from glob import glob
-
 import ibis
 import plotly.express as px
 import streamlit as st
 from ibis import _
+from queries import player_rows, selected_player
 
-MATCH_GLOB = "data/match/*.json.zst"
 QUEUE_NAMES = {
     400: "Normal Draft",
     420: "Ranked Solo/Duo",
@@ -26,24 +24,9 @@ HIGHSCORES = {
 }
 
 
-@st.cache_resource
-def connect():
-    return ibis.duckdb.connect()
-
-
 def player_games(name: str, tag: str) -> ibis.Table:
     """One row per game for the player, read lazily from the .json.zst match files."""
-    matches = connect().read_json(MATCH_GLOB, union_by_name=True)
-    rows = matches.select(
-        game_id=_.metadata.matchId,
-        queue_id=_.info.queueId,
-        game_version=_.info.gameVersion,
-        p=_.info.participants.unnest(),
-    )
-    games = rows.filter(
-        _.p.riotIdGameName.lower() == name.lower(),
-        _.p.riotIdTagline.lower() == tag.lower(),
-    ).select(
+    games = player_rows(name, tag).select(
         "game_id",
         "queue_id",
         patch=_.game_version.re_extract(r"^(\d+\.\d+)", 1),
@@ -88,20 +71,12 @@ def champion_pie(games: ibis.Table, share: float = 0.8):
 
 st.title("Welcome to the landing page!")
 
-riot_id = st.session_state.get("riot_id", "")  # set by the sidebar in app.py
-if "#" not in riot_id:
-    st.info("Enter a Riot ID like `name#tag` in the sidebar.")
-    st.stop()
-if not glob(MATCH_GLOB):
-    st.warning("No match files found. Run `python -m data.fetch_league_matches` first.")
-    st.stop()
-
-name, tag = riot_id.rsplit("#", 1)
-games = player_games(name.strip(), tag.strip())
+name, tag = selected_player()
+games = player_games(name, tag)
 
 queues = sorted(games.queue.unique().to_pyarrow().to_pylist())
 if not queues:
-    st.warning(f"No games found for {riot_id}.")
+    st.warning(f"No games found for {name}#{tag}.")
     st.stop()
 
 queue = st.selectbox("Queue", ["All", *queues])
