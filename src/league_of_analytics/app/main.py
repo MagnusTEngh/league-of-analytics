@@ -7,5 +7,11 @@ st.set_page_config(page_title="League of Analytics", layout="wide")
 # Runs on every page, so the selected player is shared via st.session_state["riot_id"].
 st.sidebar.text_input("Riot ID", key="riot_id", placeholder="name#tag")
 
-navigation = st.navigation([st.Page("pages/1_Home.py", title="Home", default=True)])
+navigation = st.navigation(
+    [
+        st.Page("pages/1_Home.py", title="Home", default=True),
+        st.Page("pages/2_Analytics.py", title="Analytics"),
+        st.Page("pages/3_Champion.py", title="Champion"),
+    ]
+)
 navigation.run()
