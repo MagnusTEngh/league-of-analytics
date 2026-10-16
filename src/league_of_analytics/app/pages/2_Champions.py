@@ -1,27 +1,27 @@
-"""Champions page for League of Analytics.
+"""Champion page: select a champion and show its splash art."""
 
-This page displays:
-- An overview of which Champions the player favors
-- A selector to pick a specific champion for detailed stats
-- Champion splash art when a champion is selected
-"""
-
+import requests
 import streamlit as st
 
-st.title("Champions")
-st.write("This is the Champions page.")
+DDRAGON = "https://ddragon.leagueoflegends.com"
 
-# Display selected account from session state
-if "selected_account" in st.session_state:
-    st.write(f"Selected Account: **{st.session_state.selected_account}**")
-else:
-    st.write("No account selected. Please select an account from the sidebar.")
 
-st.write("\nHere you can see champion statistics and performance.")
+@st.cache_data(ttl=24 * 3600)
+def champion_names() -> list[str]:
+    """Champion ids from the latest Data Dragon release."""
+    version = requests.get(f"{DDRAGON}/api/versions.json", timeout=10).json()[0]
+    data = requests.get(
+        f"{DDRAGON}/cdn/{version}/data/en_US/champion.json", timeout=10
+    ).json()["data"]
+    return sorted(data)
 
-# Placeholder for actual content
-st.subheader("Champion Overview")
-st.write("- Most played champions")
-st.write("- Win rate by champion")
-st.write("- Champion selector for detailed stats")
-st.write("- Champion splash art display")
+
+def splash_url(champion: str) -> str:
+    return f"{DDRAGON}/cdn/img/champion/splash/{champion}_0.jpg"
+
+
+st.title("Champion")
+
+champion = st.selectbox("Select champion", champion_names(), index=None)
+if champion:
+    st.image(splash_url(champion), caption=champion)

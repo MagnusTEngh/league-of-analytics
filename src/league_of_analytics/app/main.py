@@ -1,41 +1,17 @@
-"""Main Streamlit app for League of Analytics.
-
-This is the entry point for the Streamlit web application.
-"""
+"""App entrypoint: shared sidebar (player selection) and page navigation."""
 
 import streamlit as st
 
-# Initialize session state for account selection
-if "selected_account" not in st.session_state:
-    st.session_state.selected_account = None
+st.set_page_config(page_title="League of Analytics", layout="wide")
 
-# Sidebar with account selector
-with st.sidebar:
-    st.title("League of Analytics")
-    
-    # Account selection dropdown
-    account_options = [
-        "account1#tag1",
-        "account2#tag2", 
-        "account3#tag3",
-        "account4#tag4",
+# Runs on every page, so the selected player is shared via st.session_state["riot_id"].
+st.sidebar.text_input("Riot ID", key="riot_id", placeholder="name#tag")
+
+navigation = st.navigation(
+    [
+        st.Page("pages/1_Overview.py", title="Home", default=True),
+        st.Page("pages/2_Analytics.py", title="Analytics"),
+        st.Page("pages/3_Champion.py", title="Champion"),
     ]
-    
-    selected_account = st.selectbox(
-        "Select Account",
-        options=account_options,
-        index=0 if st.session_state.selected_account is None else account_options.index(st.session_state.selected_account) if st.session_state.selected_account in account_options else 0,
-        key="account_selector"
-    )
-    
-    # Update session state when selection changes
-    if selected_account != st.session_state.selected_account:
-        st.session_state.selected_account = selected_account
-    
-    st.divider()
-    st.write(f"Current Account: **{st.session_state.selected_account}**")
-
-# Main page content
-st.header("Dashboard")
-st.write(f"Welcome to the League of Analytics dashboard!")
-st.write(f"You have selected: **{st.session_state.selected_account}**")
+)
+navigation.run()
