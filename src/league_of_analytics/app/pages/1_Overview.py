@@ -60,7 +60,9 @@ left, right = st.columns(2)
 with left:
     st.subheader("Games by queue")
     per_queue = games.groupby("queue", as_index=False).agg(games=("game_id", "nunique"))
-    st.plotly_chart(px.pie(per_queue, values="games", names="queue"), width="stretch")
+    st.plotly_chart(
+        px.pie(per_queue, values="games", names="queue"), theme=None, width="stretch"
+    )
 
 with right:
     st.subheader("Highscores (best single game)")
@@ -87,8 +89,8 @@ with left:
         category_orders={"patch": sorted_patches(per_patch["patch"].unique())},
     )
     fig.update_yaxes(tickformat=".0%")
-    st.plotly_chart(fig, width="stretch")
+    st.plotly_chart(fig, theme=None, width="stretch")
 
 with right:
     st.subheader("Champions played")
-    st.plotly_chart(champion_pie(games), width="stretch")
+    st.plotly_chart(champion_pie(games), theme=None, width="stretch")
