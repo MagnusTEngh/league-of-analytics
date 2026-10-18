@@ -34,6 +34,7 @@ EXTRA_FEATURES = [
     "inhibitorKills",
     "nexusTakedowns",
 ]
+VIOLET_SCALE = [[0, "#31343B"], [1, "#8B5CF6"]]  # dark gray to violet
 
 EXPLANATION = """
 Logistic regression models the probability of a binary outcome (win or lose) from
@@ -82,12 +83,17 @@ def run_regression(data: pd.DataFrame) -> dict:
         y=["Actual Negative", "Actual Positive"],
         annotation_text=[[f"True negative {tn}", f"False positive {fp}"],
                          [f"False negative {fn}", f"True positive {tp}"]],
-        colorscale="Viridis",
+        colorscale=VIOLET_SCALE,
     )
 
     fpr, tpr, _thresholds = roc_curve(y_test, y_prob)
     auc = roc_auc_score(y_test, y_prob)
-    roc = go.Figure(go.Scatter(x=fpr, y=tpr, mode="lines", name=f"ROC (AUC = {auc:.2f})"))
+    roc = go.Figure(
+        go.Scatter(
+            x=fpr, y=tpr, mode="lines", name=f"ROC (AUC = {auc:.2f})",
+            line=dict(color="#C4B5FD"),
+        )
+    )
     roc.add_shape(type="line", x0=0, y0=0, x1=1, y1=1, line=dict(color="grey", dash="dash"))
     roc.update_layout(
         title="ROC curve",
@@ -158,7 +164,7 @@ with st.spinner("Fitting model..."):
 main, side = st.columns([3, 1])
 
 with main:
-    st.plotly_chart(result["conf_matrix"], width="stretch")
+    st.plotly_chart(result["conf_matrix"], theme=None, width="stretch")
     st.subheader("Classification report")
     st.dataframe(result["class_report"].round(2), width="stretch")
     st.subheader("Coefficients")
@@ -168,4 +174,4 @@ with side:
     st.metric("Accuracy", f"{result['accuracy']:.0%}")
     st.metric("McFadden R²", f"{result['mcfadden_r2']:.2f}")
     st.metric("AUC score", f"{result['auc']:.2f}")
-    st.plotly_chart(result["roc"], width="stretch")
+    st.plotly_chart(result["roc"], theme=None, width="stretch")
