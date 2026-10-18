@@ -10,8 +10,8 @@ st.sidebar.text_input("Riot ID", key="riot_id", placeholder="name#tag")
 navigation = st.navigation(
     [
         st.Page("pages/1_Overview.py", title="Home", default=True),
-        st.Page("pages/2_Analytics.py", title="Analytics"),
-        st.Page("pages/3_Champion.py", title="Champion"),
+        st.Page("pages/2_Champions.py", title="Champions"),
+        st.Page("pages/3_Analytics.py", title="Analytics"),
     ]
 )
 navigation.run()
