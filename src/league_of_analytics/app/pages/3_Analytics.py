@@ -5,8 +5,6 @@ import pandas as pd
 import plotly.figure_factory as ff
 import plotly.graph_objects as go
 import streamlit as st
-from ibis import _
-from queries import player_rows, selected_player
 from scipy.stats import norm
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (
@@ -18,8 +16,12 @@ from sklearn.metrics import (
     roc_curve,
 )
 from sklearn.model_selection import train_test_split
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import StandardScaler
 from sklearn.utils import resample
 from statsmodels.stats.outliers_influence import variance_inflation_factor
+
+from league_of_analytics.app.queries.players import player_features, selected_player
 
 DEFAULT_FEATURES = ["kills", "deaths", "assists", "wardsPlaced"]
 EXTRA_FEATURES = [
@@ -32,14 +34,17 @@ EXTRA_FEATURES = [
     "inhibitorKills",
     "nexusTakedowns",
 ]
+VIOLET_SCALE = [[0, "#31343B"], [1, "#8B5CF6"]]  # dark gray to violet
 
 EXPLANATION = """
 Logistic regression models the probability of a binary outcome (win or lose) from
-features such as kills, deaths, assists and wards placed.
+features such as kills, deaths, assists and wards placed. Features are standardized first,
+so coefficients are comparable across features.
 
 - **Coefficients** show how strongly each feature pushes the chance of winning up or down.
-- **Odds ratios** (exp of the coefficient) show how the odds change per one-unit increase.
-  An odds ratio of 1.2 for assists means each extra assist raises the odds of winning by 20%.
+- **Odds ratios** (exp of the coefficient) show how the odds change per one standard
+  deviation increase. An odds ratio of 1.2 for assists means a typical-sized rise in assists
+  raises the odds of winning by 20%.
 - **Performance metrics** (accuracy, AUC, McFadden R², confusion matrix) show how well the model
   predicts outcomes on games it has not seen.
 - **P-values** here come from bootstrapped standard errors; **VIF** flags features that overlap
@@ -47,19 +52,14 @@ features such as kills, deaths, assists and wards placed.
 """
 
 
-@st.cache_data
-def load_data(name: str, tag: str, features: tuple[str, ...]) -> pd.DataFrame:
-    """Win flag plus the chosen features for each of the player's games."""
-    table = player_rows(name, tag).select(
-        win=_.p.win.cast("int"),
-        **{f: _.p[f].cast("int") for f in features},
-    )
-    return table.execute()
+def make_model():
+    """Standardize features, then fit a logistic regression (avoids convergence warnings)."""
+    return make_pipeline(StandardScaler(), LogisticRegression())
 
 
 def bootstrap_coefficients(X, y, n_iterations: int = 1000):
     coefs = np.array(
-        [LogisticRegression().fit(*resample(X, y)).coef_[0] for _ in range(n_iterations)]
+        [make_model().fit(*resample(X, y))[-1].coef_[0] for _ in range(n_iterations)]
     )
     return coefs.mean(axis=0), coefs.std(axis=0)
 
@@ -70,7 +70,8 @@ def run_regression(data: pd.DataFrame) -> dict:
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42, stratify=y
     )
-    model = LogisticRegression().fit(X_train, y_train)
+    model = make_model().fit(X_train, y_train)
+    coef = model[-1].coef_[0]
     y_pred = model.predict(X_test)
     y_prob = model.predict_proba(X_test)[:, 1]
 
@@ -82,12 +83,17 @@ def run_regression(data: pd.DataFrame) -> dict:
         y=["Actual Negative", "Actual Positive"],
         annotation_text=[[f"True negative {tn}", f"False positive {fp}"],
                          [f"False negative {fn}", f"True positive {tp}"]],
-        colorscale="Viridis",
+        colorscale=VIOLET_SCALE,
     )
 
     fpr, tpr, _thresholds = roc_curve(y_test, y_prob)
     auc = roc_auc_score(y_test, y_prob)
-    roc = go.Figure(go.Scatter(x=fpr, y=tpr, mode="lines", name=f"ROC (AUC = {auc:.2f})"))
+    roc = go.Figure(
+        go.Scatter(
+            x=fpr, y=tpr, mode="lines", name=f"ROC (AUC = {auc:.2f})",
+            line=dict(color="#C4B5FD"),
+        )
+    )
     roc.add_shape(type="line", x0=0, y0=0, x1=1, y1=1, line=dict(color="grey", dash="dash"))
     roc.update_layout(
         title="ROC curve",
@@ -104,18 +110,19 @@ def run_regression(data: pd.DataFrame) -> dict:
     )
 
     mean_coefs, std_errors = bootstrap_coefficients(X_train, y_train)
+    X_scaled = StandardScaler().fit_transform(X)
     vif = (
-        [variance_inflation_factor(X.values, i) for i in range(X.shape[1])]
+        [variance_inflation_factor(X_scaled, i) for i in range(X.shape[1])]
         if X.shape[1] > 1
         else [np.nan]
     )
     coefficients = pd.DataFrame(
         {
-            "Odds ratio": np.exp(model.coef_[0]),
-            "Coefficient": model.coef_[0],
+            "Odds ratio": np.exp(coef),
+            "Coefficient": coef,
             "Mean coefficient": mean_coefs,
             "Standard error": std_errors,
-            "P-value": 2 * (1 - norm.cdf(np.abs(model.coef_[0] / std_errors))),
+            "P-value": 2 * (1 - norm.cdf(np.abs(coef / std_errors))),
             "VIF": vif,
         },
         index=X.columns,
@@ -146,8 +153,8 @@ if not features:
     st.info("Select at least one variable.")
     st.stop()
 
-data = load_data(name, tag, tuple(features))
-if data["win"].value_counts().min() < 5 or len(data["win"].unique()) < 2:
+data = player_features(name, tag, tuple(features)).dropna()
+if data["win"].nunique() < 2 or data["win"].value_counts().min() < 5:
     st.warning("Not enough wins and losses to fit a model for this player.")
     st.stop()
 
@@ -157,14 +164,14 @@ with st.spinner("Fitting model..."):
 main, side = st.columns([3, 1])
 
 with main:
-    st.plotly_chart(result["conf_matrix"], use_container_width=True)
+    st.plotly_chart(result["conf_matrix"], theme=None, width="stretch")
     st.subheader("Classification report")
-    st.dataframe(result["class_report"].round(2), use_container_width=True)
+    st.dataframe(result["class_report"].round(2), width="stretch")
     st.subheader("Coefficients")
-    st.dataframe(result["coefficients"].round(2), use_container_width=True)
+    st.dataframe(result["coefficients"].round(2), width="stretch")
 
 with side:
     st.metric("Accuracy", f"{result['accuracy']:.0%}")
     st.metric("McFadden R²", f"{result['mcfadden_r2']:.2f}")
     st.metric("AUC score", f"{result['auc']:.2f}")
-    st.plotly_chart(result["roc"], use_container_width=True)
+    st.plotly_chart(result["roc"], theme=None, width="stretch")
