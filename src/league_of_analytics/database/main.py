@@ -23,7 +23,7 @@ ACCOUNT_FILENAME_RE = re.compile(r"^(?P<region>[a-z]+)_(?P<puuid>[A-Za-z0-9_-]+)
 
 def _get_storage_path() -> str:
     """Get the base storage path for data files."""
-    return os.getenv("data_storage_path", None)
+    return os.getenv("data_storage_path", "data")
 
 
 def list_compressed_files(subdir: str) -> list[str]:

@@ -52,7 +52,7 @@ class RequestHandler:
     Each endpoint has its own method, with a shared request method for common functionality.
     """
 
-    storage_path = os.getenv("data_storage_path", None)
+    storage_path = os.getenv("data_storage_path", "data")
 
     @classmethod
     def set_storage_path(path: str):
@@ -374,7 +374,7 @@ class RequestHandler:
 
 
 def main() -> None:
-    accounts = os.getenv("ACCOUNTS", None).split(",")
+    accounts = os.getenv("ACCOUNTS", "").split(",")
 
     handler = RequestHandler()
     handler.run_collection(accounts)
