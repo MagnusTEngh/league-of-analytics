@@ -30,6 +30,7 @@ If you think one needs a change, open a pull request containing only that change
 ## Roles
 
 Load the matching skill from `.agents/skills/`:
+
 - `leader`: plans and delegates
 - `worker`: implements one issue
 - `reviewer`: reviews one change, read-only
