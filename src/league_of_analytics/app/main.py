@@ -12,8 +12,14 @@ dark.layout.paper_bgcolor = "rgba(0,0,0,0)"
 dark.layout.plot_bgcolor = "rgba(0,0,0,0)"
 pio.templates.default = "plotly_dark"
 px.defaults.color_discrete_sequence = [
-    "#8B5CF6", "#C4B5FD", "#A78BFA", "#6D28D9",
-    "#DDD6FE", "#5B21B6", "#9CA3AF", "#4C1D95",
+    "#8B5CF6",
+    "#C4B5FD",
+    "#A78BFA",
+    "#6D28D9",
+    "#DDD6FE",
+    "#5B21B6",
+    "#9CA3AF",
+    "#4C1D95",
 ]  # violet and lavender tones plus gray
 
 # Runs on every page, so the selected player is shared via st.session_state["riot_id"].

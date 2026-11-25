@@ -29,22 +29,22 @@ def _get_storage_path() -> str:
 def list_compressed_files(subdir: str) -> list[str]:
     """
     List all .json.zst files in a subdirectory.
-    
+
     Args:
         subdir: Subdirectory under storage path
-        
+
     Returns:
         List of file paths
     """
     storage_path = _get_storage_path()
     data_dir = os.path.join(storage_path, subdir)
-    
+
     if not os.path.exists(data_dir):
         return []
-    
+
     files = []
     for f in os.listdir(data_dir):
-        if f.endswith('.json.zst'):
+        if f.endswith(".json.zst"):
             files.append(os.path.join(data_dir, f))
     return files
 
@@ -52,16 +52,16 @@ def list_compressed_files(subdir: str) -> list[str]:
 def read_compressed_json(filepath: str) -> dict[str, Any] | None:
     """
     Read a compressed JSON file.
-    
+
     Args:
         filepath: Path to the .json.zst file
-        
+
     Returns:
         Parsed JSON data, or None if failed
     """
     try:
         dctx = zstd.ZstdDecompressor()
-        with open(filepath, 'rb') as f:
+        with open(filepath, "rb") as f:
             compressed_data = f.read()
         json_data = dctx.decompress(compressed_data)
         return json.loads(json_data)
@@ -84,7 +84,7 @@ def _load_matches(con: duckdb.DuckDBPyConnection, match_dir: str = "match_v5") -
             data JSON
         )
     """)
-    
+
     rows = []
 
     for filepath in list_compressed_files(match_dir):
@@ -92,13 +92,13 @@ def _load_matches(con: duckdb.DuckDBPyConnection, match_dir: str = "match_v5") -
         if not m:
             print(f"  Skipping unrecognised match filename: {filepath}")
             continue
-        
+
         data = read_compressed_json(filepath)
         if data is None:
             continue
-        
+
         rows.append((m["match_id"], m["region"], data))
-    
+
     if rows:
         con.executemany(
             "INSERT INTO matches VALUES (?, ?, ?)",
@@ -107,7 +107,9 @@ def _load_matches(con: duckdb.DuckDBPyConnection, match_dir: str = "match_v5") -
         print(f"  Loaded {len(rows)} matches")
 
 
-def _load_timelines(con: duckdb.DuckDBPyConnection, timeline_dir: str = "timelines") -> None:
+def _load_timelines(
+    con: duckdb.DuckDBPyConnection, timeline_dir: str = "timelines"
+) -> None:
     """Load timeline data into the timelines table."""
     con.execute("""
         CREATE OR REPLACE TABLE timelines (
@@ -116,20 +118,20 @@ def _load_timelines(con: duckdb.DuckDBPyConnection, timeline_dir: str = "timelin
             data JSON
         )
     """)
-    
+
     rows = []
     for filepath in list_compressed_files(timeline_dir):
         m = TIMELINE_FILENAME_RE.match(_stem(filepath))
         if not m:
             print(f"  Skipping unrecognised timeline filename: {filepath}")
             continue
-        
+
         data = read_compressed_json(filepath)
         if data is None:
             continue
-        
+
         rows.append((m["match_id"], m["region"], data))
-    
+
     if rows:
         con.executemany(
             "INSERT INTO timelines VALUES (?, ?, ?)",
@@ -138,7 +140,9 @@ def _load_timelines(con: duckdb.DuckDBPyConnection, timeline_dir: str = "timelin
         print(f"  Loaded {len(rows)} timelines")
 
 
-def _load_accounts(con: duckdb.DuckDBPyConnection, account_dir: str = "account") -> None:
+def _load_accounts(
+    con: duckdb.DuckDBPyConnection, account_dir: str = "account"
+) -> None:
     """Load account data into the accounts table."""
     con.execute("""
         CREATE OR REPLACE TABLE accounts (
@@ -147,20 +151,20 @@ def _load_accounts(con: duckdb.DuckDBPyConnection, account_dir: str = "account")
             data JSON
         )
     """)
-    
+
     rows = []
     for filepath in list_compressed_files(account_dir):
         m = ACCOUNT_FILENAME_RE.match(_stem(filepath))
         if not m:
             print(f"  Skipping unrecognised account filename: {filepath}")
             continue
-        
+
         data = read_compressed_json(filepath)
         if data is None:
             continue
-        
+
         rows.append((m["puuid"], m["region"], data))
-    
+
     if rows:
         con.executemany(
             "INSERT INTO accounts VALUES (?, ?, ?)",
@@ -177,15 +181,15 @@ def make_duckdb(
 ) -> str:
     """
     Build (or rebuild) a duckdb database with tables for each endpoint.
-    
+
     One row per downloaded file, data kept as VARIANT type.
-    
+
     Args:
         db_path: Path to the duckdb database file
         match_dir: Directory containing match files
         timeline_dir: Directory containing timeline files
         account_dir: Directory containing account files
-        
+
     Returns:
         Path to the duckdb database file
     """
@@ -194,7 +198,7 @@ def make_duckdb(
     os.makedirs(os.path.join(storage_path, match_dir), exist_ok=True)
     os.makedirs(os.path.join(storage_path, timeline_dir), exist_ok=True)
     os.makedirs(os.path.join(storage_path, account_dir), exist_ok=True)
-    
+
     con = duckdb.connect(db_path)
     try:
         _load_matches(con, match_dir)
@@ -202,7 +206,7 @@ def make_duckdb(
         _load_accounts(con, account_dir)
     finally:
         con.close()
-    
+
     print(f"Database written to {db_path}")
     return db_path
 
@@ -210,17 +214,18 @@ def make_duckdb(
 def get_connection(db_path: str = "data/league.duckdb") -> duckdb.DuckDBPyConnection:
     """
     Get a read-only connection to the DuckDB database.
-    
+
     Args:
         db_path: Path to the duckdb database file
-        
+
     Returns:
         DuckDB connection object
     """
     return duckdb.connect(db_path, read_only=True)
 
+
 def check_db():
-    con = get_connection(db_path= "data/league.duckdb")
+    con = get_connection(db_path="data/league.duckdb")
     # 1. Get all existing tables
     tables = con.execute("SHOW TABLES").fetchall()
 
@@ -235,17 +240,14 @@ def check_db():
 
         # 2. Print table description (column names, types, etc.)
         print("\nDescription:")
-        description = con.execute(
-            f'DESCRIBE "{table_name}"'
-        ).fetchdf()
+        description = con.execute(f'DESCRIBE "{table_name}"').fetchdf()
         print(description.to_string(index=False))
 
         # 3. Print the first row
         print("\nFirst row:")
-        rows = con.execute(
-            f'SELECT * FROM "{table_name}" LIMIT 1'
-        ).fetchdf()
+        rows = con.execute(f'SELECT * FROM "{table_name}" LIMIT 1').fetchdf()
         print(rows.to_string(index=False))
+
 
 if __name__ == "__main__":
     make_duckdb()
