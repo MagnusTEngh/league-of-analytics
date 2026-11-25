@@ -7,9 +7,9 @@ Goal: gather League of Legends data from the Riot Games API and present a data s
 Read before starting any task:
 
 - `README.md`: project overview
-- `architecture.md`: structure and data flow
+- `docs/architecture/00_overview.qmd`: structure and data flow
 
-**Do not edit `README.md` or `architecture.md` directly.** No direct commits, no pushes to the main branch.
+**Do not edit `README.md` or `docs/architecture/` directly.** No direct commits, no pushes to the main branch.
 
 If you think one needs a change, open a pull request containing only that change, with a short description of what and why. A human reviews and merges it. Never bundle these edits into a PR with code changes.
 

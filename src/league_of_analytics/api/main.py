@@ -336,7 +336,7 @@ class RequestHandler:
         all_match_ids = self.get_all_matches_for_account(game_name, tag)
         logger.info(f"Found {len(all_match_ids)} matches for account")
         
-        # Note: list of match ids is not saved as per architecture.md
+        # Note: list of match ids is not saved as per docs/architecture/00_overview.qmd
         
         # Process each match
         for match_id in all_match_ids:
