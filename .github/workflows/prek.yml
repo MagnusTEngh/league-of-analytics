@@ -31,7 +31,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v10
+        uses: DeterminateSystems/nix-installer-action@v13
       - name: Run nixfmt
         run: nix fmt --check
 
@@ -42,7 +42,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v10
+        uses: DeterminateSystems/nix-installer-action@v13
       - name: Run statix
         run: nix run nixpkgs/statix -- check
 
@@ -53,7 +53,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Install Nix
-        uses: DeterminateSystems/nix-installer-action@v10
+        uses: DeterminateSystems/nix-installer-action@v13
       - name: Run deadnix
         run: nix run nixpkgs/deadnix -- .
 
@@ -66,14 +66,12 @@ jobs:
     needs: []
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@v6
         with:
-          python-version: '3.12'
-      - name: Install dependencies
-        run: pip install ty
+          enable-cache: true
+      - run: uv sync --all-groups
       - name: Run ty
-        run: ty check
+        run: uv run ty check
 
   pytest:
     name: Tests
@@ -81,14 +79,12 @@ jobs:
     needs: []
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@v6
         with:
-          python-version: '3.12'
-      - name: Install dependencies
-        run: pip install pytest
+          enable-cache: true
+      - run: uv sync --all-groups
       - name: Run pytest
-        run: pytest
+        run: uv run pytest
 
   ruff:
     name: Ruff Lint
@@ -96,14 +92,12 @@ jobs:
     needs: []
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@v6
         with:
-          python-version: '3.12'
-      - name: Install dependencies
-        run: pip install ruff
+          enable-cache: true
+      - run: uv sync --all-groups
       - name: Run ruff
-        run: ruff check .
+        run: uv run ruff check .
 
   ruff-format:
     name: Ruff Format
@@ -111,12 +105,10 @@ jobs:
     needs: []
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: astral-sh/setup-uv@v6
         with:
-          python-version: '3.12'
-      - name: Install dependencies
-        run: pip install ruff
+          enable-cache: true
+      - run: uv sync --all-groups
       - name: Run ruff-format
-        run: ruff format --check .
+        run: uv run ruff format --check .
 

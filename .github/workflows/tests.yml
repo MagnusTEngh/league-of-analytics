@@ -20,7 +20,7 @@ jobs:
         with:
           enable-cache: true
       - run: uv sync --all-groups
-      - uses: j178/prek-action@v3
+      - uses: j178/prek-action@v2
         with:
           install-only: true
       - name: Lint hooks
