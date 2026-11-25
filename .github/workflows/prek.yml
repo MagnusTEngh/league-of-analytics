@@ -33,7 +33,7 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@v13
       - name: Run nixfmt
-        run: nix fmt --check
+        run: nix fmt -- --ci
 
   statix:
     name: Statix Lint
