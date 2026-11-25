@@ -81,8 +81,10 @@ def run_regression(data: pd.DataFrame) -> dict:
         z=[[tn, fp], [fn, tp]],
         x=["Predicted Negative", "Predicted Positive"],
         y=["Actual Negative", "Actual Positive"],
-        annotation_text=[[f"True negative {tn}", f"False positive {fp}"],
-                         [f"False negative {fn}", f"True positive {tp}"]],
+        annotation_text=[
+            [f"True negative {tn}", f"False positive {fp}"],
+            [f"False negative {fn}", f"True positive {tp}"],
+        ],
         colorscale=VIOLET_SCALE,
     )
 
@@ -90,17 +92,22 @@ def run_regression(data: pd.DataFrame) -> dict:
     auc = roc_auc_score(y_test, y_prob)
     roc = go.Figure(
         go.Scatter(
-            x=fpr, y=tpr, mode="lines", name=f"ROC (AUC = {auc:.2f})",
-            line=dict(color="#C4B5FD"),
+            x=fpr,
+            y=tpr,
+            mode="lines",
+            name=f"ROC (AUC = {auc:.2f})",
+            line={"color": "#C4B5FD"},
         )
     )
-    roc.add_shape(type="line", x0=0, y0=0, x1=1, y1=1, line=dict(color="grey", dash="dash"))
+    roc.add_shape(
+        type="line", x0=0, y0=0, x1=1, y1=1, line={"color": "grey", "dash": "dash"}
+    )
     roc.update_layout(
         title="ROC curve",
         xaxis_title="False positive rate",
         yaxis_title="True positive rate",
-        xaxis=dict(range=[0, 1]),
-        yaxis=dict(range=[0, 1]),
+        xaxis={"range": [0, 1]},
+        yaxis={"range": [0, 1]},
     )
 
     # McFadden R2 on the test set: fitted model vs. null model (train win rate)

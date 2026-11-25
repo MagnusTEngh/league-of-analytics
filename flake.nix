@@ -5,7 +5,8 @@
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
   };
 
-  outputs = { self, nixpkgs, ... }:
+  outputs =
+    { self, nixpkgs, ... }:
     let
       system = "x86_64-linux";
       pkgs = import nixpkgs {
@@ -14,6 +15,8 @@
       };
     in
     {
+      formatter.${system} = pkgs.nixfmt-tree;
+
       devShells.${system}.default = pkgs.mkShell {
         packages = with pkgs; [
           # Python tools
@@ -22,21 +25,21 @@
 
           # duckdb dependency
           stdenv.cc.cc.lib
-          
+
           # Code editor
           vscode
-          
+
           # Git hooks
           pre-commit
-          
+
           # Additional useful tools
           git
           curl
         ];
-        
+
         # duckdb dependency
         LD_LIBRARY_PATH = "${pkgs.stdenv.cc.cc.lib}/lib";
-        
+
         shellHook = ''
           alias vscode-web='code serve-web --host 0.0.0.0 --port 8000 --without-connection-token --accept-server-license-terms'
 
@@ -46,7 +49,7 @@
           echo "  vscode-web"
         '';
       };
-      
+
       packages.${system}.default = self.devShells.${system}.default;
     };
 }

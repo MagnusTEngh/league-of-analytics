@@ -10,18 +10,17 @@ Common query categories:
 - Stats queries: Get aggregated statistics, win rates, etc.
 """
 
-from typing import List, Dict, Optional
 import duckdb
 
 
-def get_account_info(db_path: str, account_id: str) -> Optional[Dict]:
+def get_account_info(db_path: str, account_id: str) -> dict | None:
     """
     Get account information from the database.
-    
+
     Args:
         db_path: Path to the duckdb database
         account_id: Account ID (PUUID) to look up
-        
+
     Returns:
         Account data as dictionary, or None if not found
     """
@@ -38,14 +37,14 @@ def get_account_info(db_path: str, account_id: str) -> Optional[Dict]:
         con.close()
 
 
-def get_account_matches(db_path: str, account_id: str) -> List[str]:
+def get_account_matches(db_path: str, account_id: str) -> list[str]:
     """
     Get all match IDs for a specific account.
-    
+
     Args:
         db_path: Path to the duckdb database
         account_id: Account ID (PUUID) to filter by
-        
+
     Returns:
         List of match IDs
     """
@@ -70,11 +69,11 @@ def get_account_matches(db_path: str, account_id: str) -> List[str]:
 def get_total_games(db_path: str, account_id: str) -> int:
     """
     Get total number of games played by an account.
-    
+
     Args:
         db_path: Path to the duckdb database
         account_id: Account ID (PUUID) to filter by
-        
+
     Returns:
         Total count of games
     """
@@ -85,11 +84,11 @@ def get_total_games(db_path: str, account_id: str) -> int:
 def get_winrate(db_path: str, account_id: str) -> float:
     """
     Get overall winrate for an account.
-    
+
     Args:
         db_path: Path to the duckdb database
         account_id: Account ID (PUUID) to filter by
-        
+
     Returns:
         Winrate as float (0-1)
     """
@@ -114,14 +113,14 @@ def get_winrate(db_path: str, account_id: str) -> float:
         con.close()
 
 
-def get_winrate_by_queue(db_path: str, account_id: str) -> Dict[str, float]:
+def get_winrate_by_queue(db_path: str, account_id: str) -> dict[str, float]:
     """
     Get winrate by queue type for an account.
-    
+
     Args:
         db_path: Path to the duckdb database
         account_id: Account ID (PUUID) to filter by
-        
+
     Returns:
         Dictionary mapping queue ID to winrate
     """
@@ -146,14 +145,14 @@ def get_winrate_by_queue(db_path: str, account_id: str) -> Dict[str, float]:
         con.close()
 
 
-def get_champion_stats(db_path: str, account_id: str) -> Dict[str, Dict]:
+def get_champion_stats(db_path: str, account_id: str) -> dict[str, dict]:
     """
     Get champion statistics for an account.
-    
+
     Args:
         db_path: Path to the duckdb database
         account_id: Account ID (PUUID) to filter by
-        
+
     Returns:
         Dictionary mapping champion ID to stats dict with:
         - games: Total games played
@@ -182,7 +181,7 @@ def get_champion_stats(db_path: str, account_id: str) -> Dict[str, Dict]:
                 "games": row[1],
                 "wins": row[2],
                 "losses": row[1] - row[2],
-                "winrate": row[2] / row[1] if row[1] > 0 else 0
+                "winrate": row[2] / row[1] if row[1] > 0 else 0,
             }
             for row in result
         }
@@ -190,14 +189,14 @@ def get_champion_stats(db_path: str, account_id: str) -> Dict[str, Dict]:
         con.close()
 
 
-def get_games_by_patch(db_path: str, account_id: str) -> Dict[str, int]:
+def get_games_by_patch(db_path: str, account_id: str) -> dict[str, int]:
     """
     Get number of games played by patch version.
-    
+
     Args:
         db_path: Path to the duckdb database
         account_id: Account ID (PUUID) to filter by
-        
+
     Returns:
         Dictionary mapping patch version to game count
     """
@@ -222,14 +221,14 @@ def get_games_by_patch(db_path: str, account_id: str) -> Dict[str, int]:
         con.close()
 
 
-def get_high_scores(db_path: str, account_id: str) -> Dict[str, int]:
+def get_high_scores(db_path: str, account_id: str) -> dict[str, int]:
     """
     Get high scores for various stats for an account.
-    
+
     Args:
         db_path: Path to the duckdb database
         account_id: Account ID (PUUID) to filter by
-        
+
     Returns:
         Dictionary with high score values for:
         - kills
@@ -242,7 +241,7 @@ def get_high_scores(db_path: str, account_id: str) -> Dict[str, int]:
     con = duckdb.connect(db_path, read_only=True)
     try:
         stats = {}
-        
+
         # Query for each stat type
         for stat_name, json_path in [
             ("kills", "$.kills"),
@@ -261,20 +260,20 @@ def get_high_scores(db_path: str, account_id: str) -> Dict[str, int]:
             """
             result = con.execute(query, (account_id,)).fetchone()
             stats[stat_name] = result[0] if result and result[0] else 0
-        
+
         return stats
     finally:
         con.close()
 
 
-def get_match_details(db_path: str, match_id: str) -> Optional[Dict]:
+def get_match_details(db_path: str, match_id: str) -> dict | None:
     """
     Get full details for a specific match.
-    
+
     Args:
         db_path: Path to the duckdb database
         match_id: Match ID to retrieve
-        
+
     Returns:
         Match data as dictionary, or None if not found
     """
@@ -291,14 +290,14 @@ def get_match_details(db_path: str, match_id: str) -> Optional[Dict]:
         con.close()
 
 
-def get_match_timeline(db_path: str, match_id: str) -> Optional[Dict]:
+def get_match_timeline(db_path: str, match_id: str) -> dict | None:
     """
     Get timeline data for a specific match.
-    
+
     Args:
         db_path: Path to the duckdb database
         match_id: Match ID to retrieve
-        
+
     Returns:
         Timeline data as dictionary, or None if not found
     """

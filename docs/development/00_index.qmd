@@ -1,0 +1,106 @@
+---
+title: Development Guide
+---
+
+# Development Guide
+
+This guide explains how to use the different components of this template.
+
+## Component Guides
+
+
+### Python Development
+
+#### Running Tests
+
+Run all tests with coverage:
+```bash
+pytest
+```
+
+Or with uv:
+```bash
+uv run pytest
+```
+
+#### Test Coverage
+
+- View local HTML report: Open `htmlcov/index.html` in your browser
+- Coverage is automatically generated on every test run
+- Minimum coverage threshold: 80% (configurable in pyproject.toml)
+
+#### Code Quality
+
+- **Linting**: `uv run ruff check .`
+- **Formatting**: `uv run ruff format .`
+
+
+
+
+### Nix Development
+
+#### Development Shell
+
+Enter the Nix development shell:
+```bash
+nix develop
+```
+
+This provides all the tools and dependencies defined in `flake.nix`.
+
+#### Nix Tools
+
+- **Format**: `nix fmt`
+- **Lint**: `nix run nixpkgs/statix -- check`
+- **Dead code check**: `nix run nixpkgs/deadnix -- .`
+
+
+
+
+### Git Configuration
+
+The template includes:
+- `.gitattributes` for file handling and line endings
+- `.gitmessage` for commit message template
+
+These files are automatically included when you initialize a git repository.
+
+
+
+
+### Agent Skills
+
+The template includes a collection of skills in `.agents/skills/`:
+- **curator**: Documentation maintenance
+- **leader**: Project leadership
+- **reviewer**: Code review
+- **worker**: General development
+- Plus 38 Matt Pocock skills for various development tasks
+
+To use these skills, configure your agent to load skills from the `.agents/skills/` directory.
+
+
+
+
+### Documentation
+
+#### Building Docs
+
+Install Quarto, then:
+```bash
+uv run great-docs build
+```
+
+Preview locally:
+```bash
+uv run great-docs preview
+```
+
+#### Documentation Structure
+
+- **User Guide**: All content in `docs/` directory
+- **Architecture**: Architecture overview and ADRs in `docs/architecture/`
+- **Development**: This guide and development standards
+- **Reference**: Glossary and reference materials
+
+

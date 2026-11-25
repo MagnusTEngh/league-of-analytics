@@ -33,5 +33,6 @@ Nix is used for providing the development environment.
 | Timelines   | 50-90kB | 50-90MiB |
 
 Notes:
+
 - Uncompressed files are larger by about 5-10x the space required.
 - Size of timelines files vary be game lenght.

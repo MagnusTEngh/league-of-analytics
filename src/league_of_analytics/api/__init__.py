@@ -6,4 +6,4 @@ Riot Games APIs and collecting match data.
 
 from .main import RequestHandler
 
-__all__ = ['RequestHandler']
+__all__ = ["RequestHandler"]

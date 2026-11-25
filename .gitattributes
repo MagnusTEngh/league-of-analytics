@@ -1,0 +1,56 @@
+# Text files
+*.md text
+*.txt text
+*.rst text
+*.yml text
+*.yaml text
+*.json text
+*.toml text
+*.xml text
+*.csv text
+*.tsv text
+*.sh text
+*.py text
+*.nix text
+
+# Binary files
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.svg binary
+*.pdf binary
+*.zip binary
+*.tar binary
+*.gz binary
+*.bz2 binary
+*.xz binary
+
+# Line endings
+*.sh eol=lf
+*.py eol=lf
+*.md eol=lf
+*.yml eol=lf
+*.yaml eol=lf
+*.json eol=lf
+*.toml eol=lf
+*.txt eol=lf
+*.nix eol=lf
+
+# Diff settings
+*.md diff=unified
+*.py diff=unified
+
+# Merge settings
+*.md merge=union
+*.py merge=union
+
+# Language detection
+*.nix linguist-language=Nix
+*.py linguist-language=Python
+*.md linguist-language=Markdown
+*.yml linguist-language=YAML
+*.yaml linguist-language=YAML
+*.json linguist-language=JSON
+*.toml linguist-language=TOML

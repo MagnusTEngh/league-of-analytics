@@ -1,4 +1,8 @@
-# Project architecture
+---
+title: Architecture Overview
+---
+
+# Architecture Overview
 
 ```
 league-of-analytics/
@@ -65,8 +69,6 @@ Queries for this information should be functions that can be reused between apps
 ### Streamlit
 
 This app should use pages and have a sidebar for selecting the account(s) to look at data for and navigation between pages.
-
-
 
 ## CLI tool
 

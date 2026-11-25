@@ -1,0 +1,74 @@
+# Prek configuration for league-of-analytics
+# Each hook runs at pre-commit. Component hooks are tagged with groups so they
+# can also be run per component:
+#   all hooks:      prek run -a
+#   one component:  prek run -a --group nix
+#   a single hook:  prek run -a nixfmt
+
+repos:
+  - repo: local
+    hooks:
+      # Always present markdown linting
+      - id: markdownlint
+        name: Markdown Lint
+        entry: markdownlint
+        language: node
+        additional_dependencies: [markdownlint-cli]
+        files: \.md$
+        exclude: ^\.agents/
+        groups: [always]
+
+
+      # Nix component hooks
+      - id: nixfmt
+        name: Nix Format
+        entry: .prek/hooks/nixfmt.sh
+        language: script
+        files: \.nix$
+        groups: [nix]
+
+      - id: statix
+        name: Statix Lint
+        entry: .prek/hooks/statix.sh
+        language: script
+        files: \.nix$
+        groups: [nix]
+
+      - id: deadnix
+        name: Deadnix
+        entry: .prek/hooks/deadnix.sh
+        language: script
+        files: \.nix$
+        groups: [nix]
+
+
+
+      # Python component hooks
+      - id: ty
+        name: Type Check
+        entry: .prek/hooks/ty.sh
+        language: script
+        files: \.py$
+        groups: [python]
+
+      - id: pytest
+        name: Tests
+        entry: .prek/hooks/pytest.sh
+        language: script
+        files: \.py$
+        groups: [python]
+
+      - id: ruff
+        name: Ruff Lint
+        entry: .prek/hooks/ruff.sh
+        language: script
+        files: \.py$
+        groups: [python]
+
+      - id: ruff-format
+        name: Ruff Format
+        entry: .prek/hooks/ruff-format.sh
+        language: script
+        files: \.py$
+        groups: [python]
+

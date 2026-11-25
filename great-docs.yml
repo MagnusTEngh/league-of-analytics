@@ -1,0 +1,10 @@
+site:
+  title: "league-of-analytics"
+  display_name: "league-of-analytics"
+  repo: "https://github.com/<owner>/<repo>"
+
+user_guide:
+  docs
+
+nav:
+  - User Guide
