@@ -1,28 +1,31 @@
 # Prek Hooks
 
-This directory contains Prek configuration and hooks for the project.
+This directory contains hook scripts used by the pre-commit configuration.
 
 ## Usage
 
 Run all hooks:
+
 ```bash
-prek run
+prek run -a
 ```
 
-Run specific stage:
+Run hooks for one component:
+
 ```bash
-prek run --stage always
+prek run -a --group nix
 ```
 
-Run specific hook:
+Run a single hook:
+
 ```bash
-prek run --hook <hook-id>
+prek run -a nixfmt
 ```
 
 ## Configuration
 
-The `prek.yaml` file is generated based on the selected components. Hooks are only included if their corresponding component is active.
+The configuration lives in `.pre-commit-config.yaml` at the project root. Hooks are only included if their corresponding component is active.
 
 ## GitHub Actions
 
-Each hook can be run individually in GitHub workflows. See `.github/workflows/prek.yml` for the workflow configuration.
+Each hook can be run individually in GitHub workflows. See `.github/workflows/` for the workflow configuration.

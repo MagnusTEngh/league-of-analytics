@@ -14,6 +14,8 @@
       };
     in
     {
+      formatter.${system} = pkgs.nixfmt-tree;
+
       devShells.${system}.default = pkgs.mkShell {
         packages = with pkgs; [
           # Python tools

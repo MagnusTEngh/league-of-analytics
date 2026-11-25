@@ -23,7 +23,7 @@ def get_git_sha() -> str:
             check=True,
         )
         return result.stdout.strip()[:8]
-    except Exception:
+    except OSError, subprocess.SubprocessError:
         return "unknown"
 
 
@@ -34,8 +34,13 @@ def get_fail_under() -> int:
 
         with open("pyproject.toml", "rb") as f:
             config = tomllib.load(f)
-        return config.get("tool", {}).get("coverage", {}).get("report", {}).get("fail_under", 80)
-    except Exception:
+        return (
+            config.get("tool", {})
+            .get("coverage", {})
+            .get("report", {})
+            .get("fail_under", 80)
+        )
+    except OSError, ValueError:
         return 80
 
 
