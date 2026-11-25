@@ -1,0 +1,7 @@
+[theme]
+base = "dark"
+primaryColor = "#8B5CF6"            # violet
+backgroundColor = "#23252B"         # charcoal
+secondaryBackgroundColor = "#31343B"  # dark gray
+textColor = "#E6E3F2"               # light lavender-gray
+linkColor = "#C4B5FD"               # lavender

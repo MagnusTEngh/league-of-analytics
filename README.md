@@ -2,6 +2,15 @@
 
 The goal is to create a simple data storage to build analytical apps on.
 
+## Usage
+
+| Process | Command |
+|---|---|
+| Collect json files from api | uv run collect |
+| Build database | uv run build_db |
+| Run streamlit locally |  |
+| Run streamlit in Docker |  |
+
 ## Requirements
 
 Nix is used for providing the development environment.
