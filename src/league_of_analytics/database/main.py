@@ -4,13 +4,13 @@ This module provides functions for building and querying a DuckDB database
 from the stored API response files.
 """
 
+import json
 import os
 import re
-import json
-import zstandard as zstd
-from typing import Optional, List, Dict, Any
+from typing import Any
 
 import duckdb
+import zstandard as zstd
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -26,7 +26,7 @@ def _get_storage_path() -> str:
     return os.getenv("data_storage_path", None)
 
 
-def list_compressed_files(subdir: str) -> List[str]:
+def list_compressed_files(subdir: str) -> list[str]:
     """
     List all .json.zst files in a subdirectory.
     
@@ -49,7 +49,7 @@ def list_compressed_files(subdir: str) -> List[str]:
     return files
 
 
-def read_compressed_json(filepath: str) -> Optional[Dict[str, Any]]:
+def read_compressed_json(filepath: str) -> dict[str, Any] | None:
     """
     Read a compressed JSON file.
     
@@ -65,7 +65,7 @@ def read_compressed_json(filepath: str) -> Optional[Dict[str, Any]]:
             compressed_data = f.read()
         json_data = dctx.decompress(compressed_data)
         return json.loads(json_data)
-    except Exception as e:
+    except (OSError, ValueError, zstd.ZstdError) as e:
         print(f"Error reading {filepath}: {e}")
         return None
 
@@ -86,9 +86,7 @@ def _load_matches(con: duckdb.DuckDBPyConnection, match_dir: str = "match_v5") -
     """)
     
     rows = []
-    storage_path = _get_storage_path()
-    full_match_dir = os.path.join(storage_path, match_dir)
-    
+
     for filepath in list_compressed_files(match_dir):
         m = MATCH_FILENAME_RE.match(_stem(filepath))
         if not m:

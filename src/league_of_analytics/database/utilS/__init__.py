@@ -4,11 +4,12 @@ This module contains reusable query functions for common operations
 on the DuckDB database.
 """
 
+
+
 import duckdb
-from typing import List, Optional
 
 
-def get_matches_for_account(db_path: str, puuid: str) -> List[str]:
+def get_matches_for_account(db_path: str, puuid: str) -> list[str]:
     """
     Get all match IDs for a specific account (PUUID).
     
@@ -34,7 +35,7 @@ def get_matches_for_account(db_path: str, puuid: str) -> List[str]:
         con.close()
 
 
-def get_matches_by_queue(db_path: str, queue_id: int) -> List[str]:
+def get_matches_by_queue(db_path: str, queue_id: int) -> list[str]:
     """
     Get all match IDs for a specific queue type.
     
@@ -149,7 +150,7 @@ def get_winrate_by_champion(db_path: str, puuid: str) -> dict:
             for champ, data in stats.items()}
 
 
-def get_recent_matches(db_path: str, limit: int = 10) -> List[str]:
+def get_recent_matches(db_path: str, limit: int = 10) -> list[str]:
     """
     Get most recent matches by game creation time.
     
@@ -174,7 +175,7 @@ def get_recent_matches(db_path: str, limit: int = 10) -> List[str]:
         con.close()
 
 
-def get_match_by_id(db_path: str, match_id: str) -> Optional[dict]:
+def get_match_by_id(db_path: str, match_id: str) -> dict | None:
     """
     Get full match data for a specific match ID.
     
@@ -198,7 +199,7 @@ def get_match_by_id(db_path: str, match_id: str) -> Optional[dict]:
         con.close()
 
 
-def get_timeline_by_id(db_path: str, match_id: str) -> Optional[dict]:
+def get_timeline_by_id(db_path: str, match_id: str) -> dict | None:
     """
     Get timeline data for a specific match ID.
     

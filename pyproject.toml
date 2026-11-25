@@ -45,3 +45,6 @@ fail_under = 80
 
 [tool.pytest.ini_options]
 addopts = "--cov --cov-report=term-missing --cov-report=html"
+
+[tool.ruff.lint.per-file-ignores]
+"src/league_of_analytics/app/pages/*" = ["N999"]

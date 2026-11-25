@@ -3,16 +3,16 @@
 This module provides the main RequestHandler class that handles rate limiting,
 request execution, and data storage for all Riot Games API endpoints.
 """
-from functools import wraps
+import json
 import logging
 import os
-import json
+from functools import wraps
+from typing import Any
+
+import requests
 import zstandard as zstd
-from typing import Optional, Dict, Any, List
-
-from requests_ratelimiter import LimiterSession
-
 from dotenv import load_dotenv
+from requests_ratelimiter import LimiterSession
 
 logging.basicConfig(
     level=logging.DEBUG,
@@ -82,7 +82,7 @@ class RequestHandler:
         self.session.headers.update({"X-Riot-Token": self.api_key})
     
     @log_call()
-    def run_collection(self, accounts: List[str]) -> None:
+    def run_collection(self, accounts: list[str]) -> None:
         """
         Gather data for multiple Riot accounts.
 
@@ -96,14 +96,14 @@ class RequestHandler:
 
             try:
                 self.gather_data_for_account(account)
-            except Exception as e:
+            except Exception as e:  # noqa: BLE001
                 logger.info(f"Failed to collect data for {account}: {e}")
                 continue
 
         logger.info(f"\nCollection complete. Processed {total} accounts.")
 
     @log_call()
-    def _make_request(self, url: str, params: Optional[Dict] = None) -> Optional[Dict[str, Any]]:
+    def _make_request(self, url: str, params: dict | None = None) -> dict[str, Any] | None:
         """
         Shared request method that handles errors and rate limiting.
         
@@ -118,12 +118,12 @@ class RequestHandler:
             response = self.session.get(url, params=params)
             response.raise_for_status()
             return response.json()
-        except Exception as e:
+        except (requests.RequestException, ValueError) as e:
             logger.info(f"Error making request to {url}: {e}")
             return None
 
     @log_call()
-    def _save_data(self, data: Dict[str, Any], filename: str, subdir: str) -> str:
+    def _save_data(self, data: dict[str, Any], filename: str, subdir: str) -> str:
         """
         Save data as compressed JSON file.
         
@@ -170,7 +170,7 @@ class RequestHandler:
         return os.path.exists(filepath)
 
     @log_call()
-    def get_account_by_riot_id(self, game_name: str, tag: str) -> Optional[Dict[str, Any]]:
+    def get_account_by_riot_id(self, game_name: str, tag: str) -> dict[str, Any] | None:
         """
         Get account information by riot ID (game_name#tag).
         
@@ -185,7 +185,7 @@ class RequestHandler:
         return self._make_request(url)
 
     @log_call()
-    def get_matches_by_puuid(self, puuid: str, start: int = 0, count: int = 100) -> Optional[List[str]]:
+    def get_matches_by_puuid(self, puuid: str, start: int = 0, count: int = 100) -> list[str] | None:
         """
         Get list of match IDs for a given PUUID.
         
@@ -202,7 +202,7 @@ class RequestHandler:
         return self._make_request(url, params)
 
     @log_call()
-    def get_match(self, match_id: str) -> Optional[Dict[str, Any]]:
+    def get_match(self, match_id: str) -> dict[str, Any] | None:
         """
         Get match data by match ID.
         
@@ -216,7 +216,7 @@ class RequestHandler:
         return self._make_request(url)
 
     @log_call()
-    def get_match_timeline(self, match_id: str) -> Optional[Dict[str, Any]]:
+    def get_match_timeline(self, match_id: str) -> dict[str, Any] | None:
         """
         Get match timeline by match ID.
         
@@ -230,7 +230,7 @@ class RequestHandler:
         return self._make_request(url)
 
     @log_call()
-    def get_all_matches_for_account(self, game_name: str, tag: str) -> List[str]:
+    def get_all_matches_for_account(self, game_name: str, tag: str) -> list[str]:
         """
         Get all match IDs for a given account.
         
@@ -261,7 +261,7 @@ class RequestHandler:
         return all_match_ids
 
     @log_call()
-    def save_match_data(self, match_id: str, data: Dict[str, Any]) -> str:
+    def save_match_data(self, match_id: str, data: dict[str, Any]) -> str:
         """
         Save match data to storage.
         
@@ -276,7 +276,7 @@ class RequestHandler:
         return self._save_data(data, filename, "match_v5")
 
     @log_call()
-    def save_timeline_data(self, match_id: str, data: Dict[str, Any]) -> str:
+    def save_timeline_data(self, match_id: str, data: dict[str, Any]) -> str:
         """
         Save timeline data to storage.
         
