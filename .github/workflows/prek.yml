@@ -44,7 +44,7 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@v13
       - name: Run statix
-        run: nix run nixpkgs/statix -- check
+        run: nix run nixpkgs#statix -- check
 
   deadnix:
     name: Deadnix
@@ -55,7 +55,7 @@ jobs:
       - name: Install Nix
         uses: DeterminateSystems/nix-installer-action@v13
       - name: Run deadnix
-        run: nix run nixpkgs/deadnix -- .
+        run: nix run nixpkgs#deadnix -- .
 
 
 
