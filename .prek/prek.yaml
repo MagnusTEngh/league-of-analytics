@@ -1,0 +1,70 @@
+# Prek configuration for league-of-analytics
+# Each hook can be run individually and set as required independently
+
+stages:
+  - name: always
+    hooks:
+      # Always present markdown linting
+      - id: markdownlint
+        name: Markdown Lint
+        entry: markdownlint
+        language: node
+        files: \.md$
+        stages: [always]
+
+
+  - name: nix
+    hooks:
+      - id: nixfmt
+        name: Nix Format
+        entry: .prek/hooks/nixfmt.sh
+        language: script
+        files: \.nix$
+        stages: [nix]
+
+      - id: statix
+        name: Statix Lint
+        entry: .prek/hooks/statix.sh
+        language: script
+        files: \.nix$
+        stages: [nix]
+
+      - id: deadnix
+        name: Deadnix
+        entry: .prek/hooks/deadnix.sh
+        language: script
+        files: \.nix$
+        stages: [nix]
+
+
+
+  - name: python
+    hooks:
+      - id: ty
+        name: Type Check
+        entry: .prek/hooks/ty.sh
+        language: script
+        files: \.py$
+        stages: [python]
+
+      - id: pytest
+        name: Tests
+        entry: .prek/hooks/pytest.sh
+        language: script
+        files: \.py$
+        stages: [python]
+
+      - id: ruff
+        name: Ruff Lint
+        entry: .prek/hooks/ruff.sh
+        language: script
+        files: \.py$
+        stages: [python]
+
+      - id: ruff-format
+        name: Ruff Format
+        entry: .prek/hooks/ruff-format.sh
+        language: script
+        files: \.py$
+        stages: [python]
+

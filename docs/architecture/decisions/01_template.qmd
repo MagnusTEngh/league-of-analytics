@@ -1,0 +1,50 @@
+---
+title: ADR-NNNN Decision Title
+---
+
+# ADR-NNNN: Decision Title
+
+- Status: Proposed
+- Date: YYYY-MM-DD
+- Deciders: 
+- Related: 
+
+## Context
+
+What problem are we trying to solve?
+
+What circumstances or constraints led to this decision?
+
+## Decision
+
+What have we decided?
+
+Be specific and concise.
+
+## Alternatives Considered - optional
+
+### Alternative 1
+
+Description and why it was not chosen.
+
+### Alternative 2
+
+Description and why it was not chosen.
+
+## Consequences
+
+### Positive
+
+- 
+
+### Negative
+
+- 
+
+### Risks
+
+- 
+
+## References
+
+- Links to relevant documentation, issues, PRs, etc.

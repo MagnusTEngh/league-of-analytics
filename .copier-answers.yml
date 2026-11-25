@@ -1,0 +1,12 @@
+# Changes here will be overwritten by Copier
+_commit: 53560ed
+_src_path: https://github.com/MagnusTEngh/template
+components:
+- agents
+- docs
+- git
+- nix
+- python
+- renovate
+project_name: league-of-analytics
+renovate_level: minimal

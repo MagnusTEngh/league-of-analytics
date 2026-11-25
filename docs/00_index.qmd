@@ -1,0 +1,24 @@
+---
+title: Documentation
+---
+
+# Documentation
+
+Every folder has a README with a summary and/or index of its contents. Consult these to efficiently find relevant information.
+
+## Architecture
+
+- [Architecture Overview](architecture/00_overview.qmd)
+- [Architecture Decisions](architecture/decisions/00_index.qmd)
+
+## Development
+
+- [Development Guide](development/00_index.qmd)
+
+## Reference
+
+- [Glossary](reference/00_glossary.qmd)
+
+## Rules
+
+- [Documentation Rules](01_rules.qmd)

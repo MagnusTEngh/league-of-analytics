@@ -1,0 +1,20 @@
+# Commit Message Template
+
+# Subject (50 characters or less)
+# ------------------------
+# Write a short, imperative summary of the change
+# Example: "Fix bug in user authentication"
+
+# Body (72 characters per line)
+# ----------------------------
+# Explain what was changed and why.
+# 
+# - What problem does this solve?
+# - What is the impact?
+# - Any side effects?
+
+# Footer
+# ------
+# Reference any issues or tickets
+# Example: "Closes #123"
+# Example: "Fixes JIRA-456"

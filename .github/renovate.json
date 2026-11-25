@@ -1,0 +1,92 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "enabledManagers": [
+    "github-actions",
+    "npm",
+    "pip",
+    "dockerfile",
+    "docker-compose"
+    ,
+    "flake"
+    
+  ],
+  "ignoreUnstable": true,
+  "age": {
+    "maxDays": 7
+  },
+  "vulnerabilityAlerts": {
+    "enabled": true,
+    "addLabels": ["vulnerability"]
+  },
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["major", "minor", "patch"],
+      "matchDatasources": ["npm", "pypi", "docker", "nixpkgs"],
+      "rangeStrategy": "bump"
+    },
+    
+    {
+      "description": "Nix flake updates",
+      "matchManagers": ["flake"],
+      "matchPackagePatterns": ["*"],
+      "groupName": "nix dependencies",
+      "groupSlug": "nix",
+      "enabled": true,
+      "rangeStrategy": "bump"
+    },
+    
+    
+    {
+      "description": "Python dependencies (uv/pip)",
+      "matchManagers": ["pip"],
+      "matchFileNames": ["pyproject.toml", "requirements.txt", "uv.lock"],
+      "matchPackagePatterns": ["*"],
+      "groupName": "python dependencies",
+      "groupSlug": "python",
+      "enabled": true,
+      "rangeStrategy": "bump"
+    },
+    
+    {
+      "description": "Group all updates together",
+      "matchPackagePatterns": ["*"],
+      "groupName": "all dependencies",
+      "groupSlug": "all",
+      "enabled": true
+    }
+  ],
+  "prConcurrencyLimit": 10,
+  "prPriority": 30,
+  "timezone": "Etc/UTC",
+  "schedule": ["after 10pm every weekday"],
+  "rebaseWhen": "behind-base-branch",
+  
+  "automerge": false,
+  "automergeType": "pr",
+  
+  "labels": ["dependencies"],
+  "assignees": [],
+  "reviewers": [],
+
+  "branchTopic": "{{{depNameSanitized}}}-{{{newVersionSanitized}}}",
+  "commitMessageTopic": "Update {{{depName}}} to {{{newVersion}}}",
+  "prTitle": "Update {{{depName}}} to {{{newVersion}}}",
+
+  "lockFileMaintenance": {
+    "enabled": true,
+    "schedule": ["before 5am every weekday"],
+    "automerge": false
+  },
+  "rangeStrategy": "bump",
+  "ignorePaths": [
+    "node_modules/",
+    "dist/",
+    "build/",
+    ".git/",
+    ".github/renovate.json"
+  ],
+  "enabled": true
+}

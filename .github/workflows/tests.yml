@@ -1,0 +1,69 @@
+name: Checks & Coverage
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  UV_LOCKED: "1"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --all-groups
+      - uses: j178/prek-action@v3
+        with:
+          install-only: true
+      - name: Lint hooks
+        run: prek run --all-files --show-diff-on-failure
+      - name: Tests with coverage
+        run: prek run --all-files --hook-stage pre-push
+      - name: Coverage summary
+        if: always()
+        run: uv run coverage report --format=markdown >> "$GITHUB_STEP_SUMMARY"
+      - name: Generate coverage JSON
+        if: always()
+        run: uv run coverage json
+      - name: Generate coverage page
+        if: always()
+        run: uv run python scripts/coverage_page.py
+      - name: Build docs
+        if: always()
+        run: uv run great-docs build
+      - name: Copy HTML coverage to docs site
+        if: always()
+        run: mkdir -p great-docs/_site/coverage && cp -r htmlcov/* great-docs/_site/coverage/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-html
+          path: htmlcov/
+      - uses: actions/upload-pages-artifact@v3
+        if: github.ref == 'refs/heads/main'
+        with:
+          path: great-docs/_site/
+
+  deploy:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
